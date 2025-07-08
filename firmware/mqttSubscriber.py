@@ -20,7 +20,7 @@ import pandas as pd
 mqttPort              = mD.mqttPort
 mqttBroker            = mD.mqttBrokerDC
 mqttCredentialsFile   = mD.credentials
-tlsCert               = mD.tlsCert
+# tlsCert               = mD.tlsCert
 credentials           = mD.credentials
 
 connected             = False  # Stores the connection status
@@ -62,14 +62,14 @@ def on_message(client, userdata, msg):
         print("Data      : " + str(sensorDictionary))
         dateTime  = datetime.datetime.strptime(sensorDictionary["dateTime"], '%Y-%m-%d %H:%M:%S.%f')
         sensorDictionary = decoder.decode(msg.payload.decode("utf-8","ignore"))
-        print(sensorDictionary)
-        # writePath = mSR.getWritePathMQTT(nodeID,sensorID,dateTime)
-        # exists    = mSR.directoryCheck(writePath)
-        # sensorDictionary = decoder.decode(msg.payload.decode("utf-8","ignore"))
-        # print("Writing MQTT Data")
-        # print(writePath)
-        # mSR.writeCSV2(writePath,sensorDictionary,exists)
-        # mL.writeJSONLatestMQTT(sensorDictionary,nodeID,sensorID)
+        
+        writePath = mSR.getWritePathMQTT(nodeID,sensorID,dateTime)
+        exists    = mSR.directoryCheck(writePath)
+        sensorDictionary = decoder.decode(msg.payload.decode("utf-8","ignore"))
+        print("Writing MQTT Data")
+        print(writePath)
+        mSR.writeCSV2(writePath,sensorDictionary,exists)
+        mL.writeJSONLatestMQTT(sensorDictionary,nodeID,sensorID)
 
         
     except Exception as e:
@@ -81,7 +81,7 @@ client.on_connect = on_connect
 client.on_message = on_message
 client.username_pw_set(mqttUN,mqttPW)
 
-client.tls_set(ca_certs=tlsCert, certfile=None,
+client.tls_set( certfile=None,
                             keyfile=None, cert_reqs=ssl.CERT_REQUIRED,
                             tls_version=ssl.PROTOCOL_TLSv1_2, ciphers=None)
 
