@@ -1,17 +1,3 @@
-# ***************************************************************************
-#  mintsXU4
-#   ---------------------------------
-#   Written by: Lakitha Omal Harindha Wijeratne
-#   - for -
-#   Mints: Multi-scale Integrated Sensing and Simulation
-#   ---------------------------------
-#   Date: February 4th, 2019
-#   ---------------------------------
-#   This module is written for generic implimentation of MINTS projects
-#   --------------------------------------------------------------------------
-#   https://github.com/mi3nts
-#   http://utdmints.info/
-#  ***************************************************************************
 
 import serial
 import datetime
@@ -91,20 +77,6 @@ def getWritePathMQTT(nodeID,labelIn,dateTime):
     writePath = dataFolderMQTT+"/"+nodeID+"/"+str(dateTime.year).zfill(4)  + "/" + str(dateTime.month).zfill(2)+ "/"+str(dateTime.day).zfill(2)+"/"+ "MINTS_"+ nodeID+ "_" +labelIn + "_" + str(dateTime.year).zfill(4) + "_" +str(dateTime.month).zfill(2) + "_" +str(dateTime.day).zfill(2) +".csv"
     return writePath; 
 
-def dataSplit(dataString,dateTime):
-    dataOut   = dataString.split('!')
-    if(len(dataOut) == 2):
-        tag       = dataOut[0]
-        dataQuota = dataOut[1]
-        if(tag.find("#mintsO")==0):
-            sensorSplit(dataQuota,dateTime)
-
-def sensorSplit(dataQuota,dateTime):
-    dataOut    = dataQuota.split('>')
-    if(len(dataOut) == 2):
-        sensorID   = dataOut[0]
-        sensorData = dataOut[1]
-        sensorSend(sensorID,sensorData,dateTime)
 
 
 def BME280V3WriteTest(sensorData):
@@ -204,13 +176,6 @@ def directoryCheck2(outputPath):
         os.makedirs(directoryIn)
         return False
     return True;
-
-
-
-
-
-
-
 
 def csvWriter(writePath,organizedData,keys):
     with open(writePath,'w') as output_file:

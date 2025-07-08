@@ -1,2 +1,2 @@
-@reboot cd /home/teamlary/gitHubRepos/MASK/firmware/xu4Mqtt && ./runAll.sh 
-*/5 * * * * cd /home/teamlary/gitHubRepos/MASK/firmware/xu4Mqtt && python3 deleter.py
+@reboot cd /home/teamlary/gitHubRepos/prana/firmware && ./runAll.sh 
+*/5 * * * * cd /home/teamlary/gitHubRepos/prana/firmware && python3 deleter.py

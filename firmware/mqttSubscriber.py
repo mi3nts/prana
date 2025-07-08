@@ -60,16 +60,16 @@ def on_message(client, userdata, msg):
         print("Node ID   :" + nodeID)
         print("Sensor ID :" + sensorID)
         print("Data      : " + str(sensorDictionary))
-        dateTime  = datetime.datetime.strptime(sensorDictionary["dateTime"], '%Y-%m-%d %H:%M:%S.%f')
-        sensorDictionary = decoder.decode(msg.payload.decode("utf-8","ignore"))
-        
-        writePath = mSR.getWritePathMQTT(nodeID,sensorID,dateTime)
-        exists    = mSR.directoryCheck(writePath)
-        sensorDictionary = decoder.decode(msg.payload.decode("utf-8","ignore"))
-        print("Writing MQTT Data")
-        print(writePath)
-        mSR.writeCSV2(writePath,sensorDictionary,exists)
-        mL.writeJSONLatestMQTT(sensorDictionary,nodeID,sensorID)
+
+
+        # IF NEEDDED USE THIS 
+        # dateTime  = datetime.datetime.strptime(sensorDictionary["dateTime"], '%Y-%m-%d %H:%M:%S.%f')
+        # writePath = mSR.getWritePathMQTT(nodeID,sensorID,dateTime)
+        # exists    = mSR.directoryCheck(writePath)
+        # print("Writing MQTT Data")
+        # print(writePath)
+        # mSR.writeCSV2(writePath,sensorDictionary,exists)
+        # mL.writeJSONLatestMQTT(sensorDictionary,nodeID,sensorID)
 
         
     except Exception as e:
