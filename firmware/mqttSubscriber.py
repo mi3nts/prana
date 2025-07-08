@@ -57,6 +57,17 @@ def on_message(client, userdata, msg):
     try:
         [nodeID,sensorID] = msg.topic.split('/')
         sensorDictionary = decoder.decode(msg.payload.decode("utf-8","ignore"))
+        with open("latestData.json", "r") as f:
+            lines = f.readlines()
+
+        if len(lines) > 3:      # erase old lines (and keep an extra so data doesn't ever get lost)
+            with open("latestData.json", "w") as f:
+                f.writelines(lines[-3:])
+
+        with open("latestData.json", "a") as f:
+            json.dump(sensorDictionary, f)
+            f.write(',\n')
+
         print("Node ID   :" + nodeID)
         print("Sensor ID :" + sensorID)
         print("Data      : " + str(sensorDictionary))
