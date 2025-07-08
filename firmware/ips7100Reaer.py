@@ -8,7 +8,7 @@ checkTrials  = 0
 loopInterval = 2 
 
 
-def main():
+def main(loopInterval):
     ips = IpsSensor(bus_number=4)
     ips.set_debug(True)
     ips.begin()
