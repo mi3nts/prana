@@ -32,8 +32,7 @@ mqttBrokerDC              = "mqtt.circ.utdallas.edu"
 macAddress            = findMacAddress()
 latestDisplayOn       = False
 latestOn              = True
-# airmarPort            = findAirmarPort()
-# For MQTT 
+
 mqttOn                = True
 
 mqttCredentialsFile   = 'mintsXU4/credentials/credentials.yml'
