@@ -5,7 +5,7 @@ import datetime
 from collections import OrderedDict
 
 checkTrials  = 0
-loopInterval = 2 
+loopInterval = 2
 
 
 def main(loopInterval):

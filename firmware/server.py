@@ -10,7 +10,7 @@ def getData():
     with open("latestData.json", "r") as f:
         for line in f:
             data = json.loads(line)
-    return jsonify({result})
+    return jsonify({data}) #probably doesn't work at all no clue tbh
 
 if __name__ == "__main__":
     app.run(port=5000)
