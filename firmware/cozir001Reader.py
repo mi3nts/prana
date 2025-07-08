@@ -21,10 +21,10 @@ def main(loopInterval):
         try:
             currentUnfilteredCO2 = sensor.readCO2(with_filter=False)
             currentFilteredCO2   = sensor.readCO2(with_filter=True)
-            currentTemperature          = sensor.readTemperature()
+            currentTemperature   = sensor.readTemperature()
             currentHumidity      = sensor.readHumidity()
             dateTime   = datetime.datetime.now()
-            sensorName = "IPS7100Test"
+            sensorName = "COZIR001Test"
 
 
             sensorDictionary =  OrderedDict([
