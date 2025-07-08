@@ -10,7 +10,7 @@ from i2cMints.i2c_bme280v3 import BME280V3
 from mintsXU4 import mintsSensorReader as mSR
 
 debug        = False 
-bus          = smbus2.SMBus(5)
+bus          = smbus2.SMBus(1)
 
 # # BME280V3
 bme280v3     = BME280V3(bus,debug)
