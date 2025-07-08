@@ -95,6 +95,8 @@ hostsStatusJsonFile       = "/home/teamlary/hostStatus/status.json"
 gpsOnJsonFile             = "/home/teamlary/statusFiles/gpsOn.json"
 gpsOffJsonFile            = "/home/teamlary/statusFiles/gpsOff.json"
 
+mqttBrokerDC              = "mqtt.circ.utdallas.edu"
+
 
 duePort               = findDuePort()
 nanoPorts             = findNanoPorts()
@@ -108,15 +110,25 @@ airmarPort            = findAirmarPort()
 # For MQTT 
 mqttOn                = True
 
-mqttCredentialsFile   = 'mintsXU4/credentials.yml'
+mqttCredentialsFile   = 'mintsXU4/credentials/credentials.yml'
+mintsDefinitionsFile  = 'mintsXU4/credentials/mintsDefinitions.yml'
 hostsFile             = 'mintsXU4/hosts.yml'
 locationsFile         = 'mintsXU4/locations.yml'
+
+mintsDefinitions      = yaml.load(\
+                                open(mintsDefinitionsFile),\
+                                Loader=yaml.FullLoader)
+
+dataFolder            = mintsDefinitions['dataFolder']
+
 
 mqttBroker            = "mqtt.circ.utdallas.edu"
 mqttPort              =  8883  # Secure port
 
 gpsPort               = findPort("GPS/GNSS Receiver")
-credentials            = yaml.load(open(mqttCredentialsFile), Loader=yaml.Loader)
+credentials           = yaml.load(open(mqttCredentialsFile), Loader=yaml.Loader)
+tlsCert               = mintsDefinitions['tlsCert']   
+
 
 if __name__ == "__main__":
     # the following code is for debugging
