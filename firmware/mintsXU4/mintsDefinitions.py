@@ -127,7 +127,7 @@ mqttPort              =  8883  # Secure port
 
 gpsPort               = findPort("GPS/GNSS Receiver")
 credentials           = yaml.load(open(mqttCredentialsFile), Loader=yaml.Loader)
-tlsCert               = mintsDefinitions['tlsCert']   
+# tlsCert               = mintsDefinitions['tlsCert']   
 
 
 if __name__ == "__main__":
