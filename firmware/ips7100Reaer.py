@@ -49,7 +49,9 @@ def main(loopInterval):
             
             startTime = mSR.delayMints(time.time() - startTime,loopInterval)
 
-    except KeyboardInterrupt:
+    except Exception as e:
+        print(e)
+        time.sleep(10)
         print("stopping...")
     finally:
         ips.close()
