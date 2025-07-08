@@ -1,0 +1,12 @@
+RG15:
+  description: "Hydreon RG15 Rain Guage"
+  protocol: "UART"
+  voltage_range: "3.3V to 16V (3.3V only in J2 port)"
+  power_draw: "110 μA nominal, 2-4mA when raining"
+  measurements:
+    precipitation:
+      unit: "mm"
+      description: "Measures the amount of rainfall"
+      accuracy: "±10% accuracy, may vary under freezing conditions"
+      range: "-40°C to +60°C"
+      baud_rate: "9600Hz (default)"

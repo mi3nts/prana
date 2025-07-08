@@ -1,0 +1,25 @@
+BME280:
+  description: "Adafruit BME280 Environmental Sensor Breakout"
+  protocol: "I2C"
+  address: "0x76"  # Default; 0x77 if SDO is tied to VCC
+  voltage_range: "3.3V to 5V (regulated onboard)"
+  power_draw: "0.6 mA (typical in normal mode)"
+  measurements:
+    temperature:
+      unit: "°C"
+      description: "Ambient temperature"
+      accuracy: "±1.0°C"
+      range: "-40 to 85°C"
+      sampling_rate: "1 Hz"
+    humidity:
+      unit: "%"
+      description: "Relative humidity"
+      accuracy: "±3% RH"
+      range: "0 to 100% RH"
+      sampling_rate: "1 Hz"
+    pressure:
+      unit: "mbar"
+      description: "Atmospheric pressure"
+      accuracy: "±1 hPa"
+      range: "300 to 1100 hPa"
+      sampling_rate: "1 Hz"
