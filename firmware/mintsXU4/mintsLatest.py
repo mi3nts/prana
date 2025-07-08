@@ -11,8 +11,8 @@ from mintsXU4 import mintsDefinitions as mD
 
 import ssl
 
-dataFolder          = mD.dataFolder
-dataFolderReference = mD.dataFolderReference
+dataFolder          = mD.dataFolderMQTT
+
 macAddress          = mD.macAddress
 mqttPort            = mD.mqttPort
 mqttBroker          = mD.mqttBroker
@@ -75,27 +75,15 @@ def connect(mqtt_client, mqtt_username, mqtt_password, broker_endpoint, port):
       
     return True
 
-# Added for wearable sensor Oct 13th 2022
-def writeJSONLatestWearable(hostID,sensorName,sensorDictionary):
-    directoryIn  = dataFolder+"/"+hostID+"/"+sensorName+".json"
-    print(directoryIn)
-    try:
-        with open(directoryIn,'w') as fp:
-            json.dump(sensorDictionary, fp)
 
-    except:
-        print("Json Data Not Written")
+def directoryCheck(outputPath):
+    exists = os.path.isfile(outputPath)
+    directoryIn = os.path.dirname(outputPath)
+    if not os.path.exists(directoryIn):
+        print("Creating Folder @:" + directoryIn)
+        os.makedirs(directoryIn)
+    return exists
 
-def writeMQTTLatestWearable(hostID,sensorName,sensorDictionary):
-
-    if connect(mqtt_client, mqttUN, mqttPW, broker, port):
-        try:
-            mqtt_client.publish(hostID+"/"+sensorName,json.dumps(sensorDictionary))
-
-        except Exception as e:
-            print("[ERROR] Could not publish data, error: {}".format(e))
-    
-    return True
     
 
 def writeMQTTLatest(sensorDictionary,sensorName):
@@ -122,15 +110,6 @@ def writeJSONLatest(sensorDictionary,sensorName):
     except:
         print("Json Data Not Written")
 
-def writeJSONLatestReference(sensorDictionary,sensorName):
-    directoryIn  = dataFolderReference+"/"+macAddress+"/"+sensorName+".json"
-    print(directoryIn)
-    try:
-        with open(directoryIn,'w') as fp:
-            json.dump(sensorDictionary, fp)
-
-    except:
-        print("Json Data Not Written")
 
 
 def readJSONLatestAll(sensorName):
@@ -145,3 +124,15 @@ def readJSONLatestAll(sensorName):
     except:
         print("Data Conflict!")
         return "NaN", False
+    
+
+def writeJSONLatestMQTT(sensorDictionary,macAddress,sensorName):
+    directoryIn  = dataFolder+"/"+macAddress+"/"+sensorName+".json"
+    print(directoryIn)
+    directoryCheck(directoryIn)
+    try:
+        with open(directoryIn,'w') as fp:
+            json.dump(sensorDictionary, fp)
+
+    except:
+        print("Json Data Not Written")
