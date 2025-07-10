@@ -40,8 +40,6 @@ def directoryCheck(outputPath):
 
 
 
-
-
 def sensorFinisher(dateTime,sensorName,sensorDictionary):
     #Getting Write Path
     writePath = getWritePath(sensorName,dateTime)
