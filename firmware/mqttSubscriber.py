@@ -39,7 +39,7 @@ def on_connect(client, userdata, flags, rc):
  
     # Subscribing in on_connect() - if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    nodeIDs   = ["d83add73168b","d83add731615"]
+    nodeIDs   = ["d83add73168b","d83add731615","d83add7316a5"]
     sensorIDs = ["BME280Test","COZIR001Test","IPS7100Test"]
 
     for nodeID in nodeIDs:
