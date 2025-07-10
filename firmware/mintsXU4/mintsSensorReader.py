@@ -48,9 +48,6 @@ def sensorFinisher(dateTime,sensorName,sensorDictionary):
     exists = directoryCheck(writePath)
     writeCSV2(writePath,sensorDictionary,exists)
     print(writePath)
-    if(latestOn):
-       mL.writeJSONLatest(sensorDictionary,sensorName)
-
 
     print("-----------------------------------")
     print(sensorName)
