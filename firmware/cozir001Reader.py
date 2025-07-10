@@ -9,7 +9,6 @@ import datetime
 
 
 sensor = Cozir('/dev/serial0') 
-dequeCO2 = deque()
 
 checkTrials  = 0
 loopInterval = 2 
