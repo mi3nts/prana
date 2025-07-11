@@ -1,16 +1,20 @@
-# basic example server
+# server.py
+import asyncio
+import websockets
 
-from flask import Flask, jsonify
+clients = set()
 
-app = Flask(__name__)
-cozir = Cozir()
+async def notify_all(message):
+    if clients:
+        await asyncio.gather(*[client.send(message) for client in clients])
 
-@app.route("/data")
-def getData():
-    with open("latestData.json", "r") as f:
-        for line in f:
-            data = json.loads(line)
-    return jsonify({data}) #probably doesn't work at all no clue tbh
+async def ws_handler(websocket):
+    clients.add(websocket)
+    try:
+        async for _ in websocket:
+            pass
+    finally:
+        clients.remove(websocket)
 
-if __name__ == "__main__":
-    app.run(port=5000)
+async def start_server():
+    return await websockets.serve(ws_handler, "0.0.0.0", 8765)
