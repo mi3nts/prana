@@ -20,10 +20,10 @@ export default function RippleParticles() {
       constructor() {
         this.x = Math.random() * width;
         this.y = Math.random() * height;
-        this.vx = (Math.random() - 0.5) * 2;
-        this.vy = (Math.random() - 0.5) * 2;
-        this.radius = 4;
-        this.mass = 1;
+        this.vx = (Math.random() - 0.5) * 0.5;
+        this.vy = (Math.random() - 0.5) * 0.5;
+        this.radius = 25;
+        this.mass = 4;
         this.color = `hsl(${Math.floor(Math.random() * 360)}, 100%, 60%)`;
       }
 
@@ -88,11 +88,11 @@ export default function RippleParticles() {
       };
     }
 
-    const particles = Array.from({ length: 25 }, () => new Particle());
+    const particles = Array.from({ length: 60 }, () => new Particle());
     const ripples = [];
 
     const animate = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
+      ctx.fillStyle = "rgba(0, 0, 0, 1)";
       ctx.fillRect(0, 0, width, height);
 
       // Particle-particle collisions
