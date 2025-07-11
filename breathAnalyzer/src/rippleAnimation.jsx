@@ -88,7 +88,7 @@ export default function RippleParticles() {
       };
     }
 
-    const particles = Array.from({ length: 100 }, () => new Particle());
+    const particles = Array.from({ length: 25 }, () => new Particle());
     const ripples = [];
 
     const animate = () => {
