@@ -22,7 +22,8 @@ export default function RippleParticles() {
         this.y = Math.random() * height;
         this.vx = (Math.random() - 0.5) * 2;
         this.vy = (Math.random() - 0.5) * 2;
-        this.radius = 2 + Math.random() * 2;
+        this.radius = 4;
+        this.mass = 1;
         this.color = `hsl(${Math.floor(Math.random() * 360)}, 100%, 60%)`;
       }
 
@@ -46,13 +47,55 @@ export default function RippleParticles() {
       }
     }
 
-    const particles = Array.from({ length: 300 }, () => new Particle());
+    function resolveCollision(p1, p2) {
+      const xVelocityDiff = p1.vx - p2.vx;
+      const yVelocityDiff = p1.vy - p2.vy;
+      const xDist = p2.x - p1.x;
+      const yDist = p2.y - p1.y;
+
+      if (xVelocityDiff * xDist + yVelocityDiff * yDist >= 0) {
+        const angle = -Math.atan2(p2.y - p1.y, p2.x - p1.x);
+
+        const m1 = p1.mass;
+        const m2 = p2.mass;
+
+        const u1 = rotate({ x: p1.vx, y: p1.vy }, angle);
+        const u2 = rotate({ x: p2.vx, y: p2.vy }, angle);
+
+        const v1 = {
+          x: (u1.x * (m1 - m2) + 2 * m2 * u2.x) / (m1 + m2),
+          y: u1.y
+        };
+        const v2 = {
+          x: (u2.x * (m2 - m1) + 2 * m1 * u1.x) / (m1 + m2),
+          y: u2.y
+        };
+
+        const vFinal1 = rotate(v1, -angle);
+        const vFinal2 = rotate(v2, -angle);
+
+        p1.vx = vFinal1.x;
+        p1.vy = vFinal1.y;
+        p2.vx = vFinal2.x;
+        p2.vy = vFinal2.y;
+      }
+    }
+
+    function rotate(velocity, angle) {
+      return {
+        x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
+        y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
+      };
+    }
+
+    const particles = Array.from({ length: 100 }, () => new Particle());
     const ripples = [];
 
     const animate = () => {
       ctx.fillStyle = "rgba(0, 0, 0, 0.1)";
       ctx.fillRect(0, 0, width, height);
 
+      // Particle-particle collisions
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const p1 = particles[i];
@@ -60,12 +103,8 @@ export default function RippleParticles() {
           const dx = p1.x - p2.x;
           const dy = p1.y - p2.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 20 && dist > 0.5) {
-            const force = 0.02;
-            const fx = (dx / dist) * force;
-            const fy = (dy / dist) * force;
-            p1.applyForce(fx, fy);
-            p2.applyForce(-fx, -fy);
+          if (dist < p1.radius + p2.radius) {
+            resolveCollision(p1, p2);
           }
         }
       }
