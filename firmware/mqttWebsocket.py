@@ -7,7 +7,6 @@ from paho.mqtt.client import Client as MQTTClient
 # -- MQTT Configuration --
 MQTT_BROKER = "mqtt.circ.utdallas.edu"
 MQTT_PORT = 8883
-MQTT_TOPIC = "#"  # subscribe to all, or replace with a specific topic
 
 # -- WebSocket Configuration --
 WEBSOCKET_HOST = "0.0.0.0"
@@ -28,7 +27,16 @@ async def broadcast(topic, message):
 # -- MQTT Callbacks --
 def on_connect(client, userdata, flags, rc):
     print(f"✅ MQTT connected with result code {rc}")
-    client.subscribe(MQTT_TOPIC)
+
+    topics = [
+        "d83add73168b/BME280Test",
+        "d83add731615/COZIR001Test",
+        "d83add7316a5/IPS7100Test"
+    ]
+
+    for topic in topics:
+        client.subscribe(topic)
+        print(f'subscribed to: {topic}')
 
 def on_message(client, userdata, msg):
     message = msg.payload.decode("utf-8")
