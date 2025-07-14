@@ -39,8 +39,15 @@ def on_message(client, userdata, msg):
 def start_mqtt():
     client = MQTTClient()
     client.username_pw_set("mintstest", "eryeNYj9Aj")
-    client.tls_set()
-    client.tls_insecure_set(True)
+    
+    client.tls_set(
+        ca_certs="/Users/lakitha/certs/ca-certificates.crt",
+        certfile=None,
+        keyfile=None,
+        cert_reqs=ssl.CERT_REQUIRED,
+        tls_version=ssl.PROTOCOL_TLSv1_2
+    )
+    client.tls_insecure_set(False)
     client.on_connect = on_connect
     client.on_message = on_message
 
