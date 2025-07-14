@@ -38,6 +38,9 @@ def on_message(client, userdata, msg):
 # -- Start MQTT Client --
 def start_mqtt():
     client = MQTTClient()
+    client.username_pw_set("mintstest", "eryeNYj9aj")
+    client.tls_set()
+    client.tls_insecure_set(True)
     client.on_connect = on_connect
     client.on_message = on_message
 
