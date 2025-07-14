@@ -38,13 +38,13 @@ def on_message(client, userdata, msg):
 # -- Start MQTT Client --
 def start_mqtt():
     client = MQTTClient()
-    client.username_pw_set("mintstest", "eryeNYj9aj")
+    client.username_pw_set("mintstest", "eryeNYj9Aj")
     client.tls_set()
     client.tls_insecure_set(True)
     client.on_connect = on_connect
     client.on_message = on_message
 
-    client.connect("mqtt.circ.utdallas.edu", 1883, 60)
+    client.connect("mqtt.circ.utdallas.edu", 8883, 60)
     client.loop_start()
 
 # -- WebSocket server handler --
