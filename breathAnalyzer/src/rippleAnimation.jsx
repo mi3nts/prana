@@ -2,7 +2,7 @@ import { useRef, useEffect } from "react";
 
 export default function RippleParticles() {
   const co2Ref = useRef(0);
-  const tempRef = useRef(0);
+  const pressureRef = useRef(0);
   const pmRef = useRef(0);
   const canvasRef = useRef(null);
 
@@ -42,7 +42,7 @@ export default function RippleParticles() {
         co2Ref.current = payload.co2Filtered ?? 0;
       }
       if (topic === "d83add7316a5/BME280Test") {
-        tempRef.current = payload.temperature ?? 0;
+        pressureRef.current = payload.pressure ?? 0;
       }
       if (topic === "d83add7316a5/IPS7100Test") {
         pmRef.current = parseFloat(payload.pm2_5 ?? 0);
@@ -67,8 +67,8 @@ export default function RippleParticles() {
 
       update() {
         this.radius = 20 + co2Ref.current / 20;
-        //this.vx = (Math.random() * tempRef.current()) / 10;
-        //this.vy = (Math.random() * tempRef.current()) / 10;
+        //this.vx = (Math.random() * pressureRef.current()) / 10;
+        //this.vy = (Math.random() * pressureRef.current()) / 10;
         this.x += this.vx;
         this.y += this.vy;
         if (this.x <= 0 || this.x >= width) this.vx *= -1;
@@ -136,11 +136,11 @@ export default function RippleParticles() {
       ctx.textAlign = "left";
 
       const co2Text = `CO2: ${co2Ref.current.toFixed(1)} ppm`;
-      const tempText = `Temp: ${tempRef.current.toFixed(1)} °C`;
+      const pressureText = `Pressure: ${pressureRef.current.toFixed(1)} hPa`;
       const pmText = `PM2.5: ${pmRef.current.toFixed(2)} µg/m³`;
 
       ctx.fillText(co2Text, 10, 20);
-      ctx.fillText(tempText, 10, 40);
+      ctx.fillText(pressureText, 10, 40);
       ctx.fillText(pmText, 10, 60);
 
       for (let i = 0; i < particles.length; i++) {
