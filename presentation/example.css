@@ -1,0 +1,17 @@
+body {
+    background-color: lightcoral;
+}
+
+h1 {
+    font-size: 48;
+    color: black;
+}
+
+p {
+    font-size: 32;
+    color: red;
+}
+
+.container {
+    background-color: lightblue;
+}
