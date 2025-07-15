@@ -24,11 +24,7 @@ def main(loopInterval):
     startTime    = time.time()
     while True:
         try:
-            try:
-                currentUnfilteredCO2 = sensor.readCO2(with_filter=False)
-            except e:
-                print({e})
-                currentUnfilteredCO2 = None
+            currentUnfilteredCO2 = safe_readCO2(sensor, with_filter=False)
             currentFilteredCO2   = sensor.readCO2(with_filter=True)
             currentTemperature   = sensor.readTemperature()
             currentHumidity      = sensor.readHumidity()
