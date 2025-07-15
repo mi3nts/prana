@@ -42,7 +42,7 @@ export default function RippleParticles() {
         co2Ref.current = payload.co2Filtered ?? 0;
       }
       if (topic === "d83add7316a5/BME280Test") {
-        pressureRef.current = payload.pressure ?? 0;
+        pressureRef.current = payload.pressure ?? 0 / 100;
       }
       if (topic === "d83add7316a5/IPS7100Test") {
         pmRef.current = parseFloat(payload.pm2_5 ?? 0);
@@ -66,7 +66,7 @@ export default function RippleParticles() {
       }
 
       update() {
-        const speedMult = 0.5 + (pressureRef.current - 950) / 1000;
+        const speedMult = 0.5 + (pressureRef.current - 950) / 100000;
 
         this.radius = 20 + co2Ref.current / 20;
         //this.vx = (Math.random() * pressureRef.current()) / 10;
