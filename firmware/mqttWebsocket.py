@@ -61,7 +61,7 @@ def on_connect(client, userdata, flags, rc):
     logger.info(f"MQTT connected with result code {rc}")
     topics = [
         "d83add7316a5/BME280Test",
-        "d83add731615/COZIR001Test",
+        "d83add7316a5/COZIR001Test",
         "d83add7316a5/IPS7100Test"          # IPS and BME use same bus -> same node
     ]
     for topic in topics:

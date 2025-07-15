@@ -4,7 +4,9 @@ export default function RippleParticles() {
   const co2Ref = useRef(0);
   const pressureRef = useRef(0);
   const pmRef = useRef(0);
+  const humidRef = useRef(0);
   const canvasRef = useRef(null);
+  const tempRef = useRef(0)
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -38,14 +40,17 @@ export default function RippleParticles() {
 
       console.log(`[WebSocket] ${topic}:`, payload);
 
-      if (topic === "d83add731615/COZIR001Test") {
-        co2Ref.current = payload.co2Filtered ?? 0;
+      if (topic === "d83add7316a5/COZIR001Test") {
+        co2Ref.current = payload.co2Latest ?? 0;
+        tempRef.current = (payload.temperature ?? 0);
+        humidRef.current = (payload.humidity ?? 0 );
+
       }
       if (topic === "d83add7316a5/BME280Test") {
         pressureRef.current = (payload.pressure ?? 0) / 100;
       }
       if (topic === "d83add7316a5/IPS7100Test") {
-        pmRef.current = parseFloat(payload.pm2_5 ?? 0);
+        pmRef.current = parseFloat(payload.pm0_5 ?? 0);
       }
     };
 
@@ -57,7 +62,19 @@ export default function RippleParticles() {
         this.vy = (Math.random() - 0.5) * 0.5;
         this.radius = 10;
         this.mass = 4;
-        this.color = `hsl(${Math.floor(Math.random() * 360)}, 100%, 60%)`;
+
+        const colorPalette = [
+            "#D4CBB8", // soft beige
+            "#A3BFD9", // light blue-gray
+            "#B8B3A9", // sand
+            "#8FA3B0", // desaturated blue
+            "#D6CFC4", // cream
+            "#AEC6CF", // powder blue
+            "#C2B280", // khaki
+            "#B0C4DE", // light steel blue
+            ]
+
+        this.color = `hsl(${"#D4CBB8"}, 100%, 60%)`;
       }
 
       applyForce(fx, fy) {
@@ -66,21 +83,27 @@ export default function RippleParticles() {
       }
 
       update() {
-        const speedMult = 0.5 + (pressureRef.current - 950) / 100000;
 
-        this.radius = 20 + co2Ref.current / 20;
-        //this.vx = (Math.random() * pressureRef.current()) / 10;
-        //this.vy = (Math.random() * pressureRef.current()) / 10;
+        const t = Math.min(1,(co2Ref.current)/1000)
+
+        const colorStart = "#D4CBB8"; // Soft beige
+        const colorEnd = "#B0C4DE";   // Light steel blue
+
+        this.color = lerpHex(colorStart, colorEnd, t);
+
+        const speedMult = 0.5 + (co2Ref.current) / 100;
+
         this.x += this.vx * speedMult;
         this.y += this.vy * speedMult;
         if (this.x <= 0 || this.x >= width) this.vx *= -1;
         if (this.y <= 0 || this.y >= height) this.vy *= -1;
+
       }
 
       draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-        ctx.fillStyle = this.color;
+        // ctx.fillStyle = this.color;
         ctx.fill();
       }
     }
@@ -139,11 +162,15 @@ export default function RippleParticles() {
 
       const co2Text = `CO2: ${co2Ref.current.toFixed(1)} ppm`;
       const pressureText = `Pressure: ${pressureRef.current.toFixed(1)} Pa`;
-      const pmText = `PM2.5: ${pmRef.current.toFixed(2)} µg/m³`;
+      const tempText = `Temp: ${tempRef.current.toFixed(1)} °C`
+      const pmText = `PM0.5: ${pmRef.current.toFixed(2)} µg/m³`;
+      const humidText = `Humidity: ${humidRef.current.toFixed(1)} %`;
 
       ctx.fillText(co2Text, 10, 20);
       ctx.fillText(pressureText, 10, 40);
-      ctx.fillText(pmText, 10, 60);
+      ctx.fillText(tempText, 10, 60);
+      ctx.fillText(pmText, 10, 80);
+      ctx.fillText(humidText, 10, 100);
 
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
@@ -204,6 +231,40 @@ export default function RippleParticles() {
       window.removeEventListener("resize", handleResize);
     };
   }, []);
+
+  function hexToRgb(hex) {
+    hex = hex.replace(/^#/, "");
+    const bigint = parseInt(hex, 16);
+    return {
+      r: (bigint >> 16) & 255,
+      g: (bigint >> 8) & 255,
+      b: bigint & 255,
+    };
+  }
+  
+  function rgbToHex({ r, g, b }) {
+    return (
+      "#" +
+      [r, g, b]
+        .map((x) => {
+          const hex = x.toString(16);
+          return hex.length === 1 ? "0" + hex : hex;
+        })
+        .join("")
+    );
+  }
+  
+  function lerpHex(hex1, hex2, t) {
+    const rgb1 = hexToRgb(hex1);
+    const rgb2 = hexToRgb(hex2);
+    const lerped = {
+      r: Math.round(rgb1.r + (rgb2.r - rgb1.r) * t),
+      g: Math.round(rgb1.g + (rgb2.g - rgb1.g) * t),
+      b: Math.round(rgb1.b + (rgb2.b - rgb1.b) * t),
+    };
+    return rgbToHex(lerped);
+  }
+  
 
   return <canvas ref={canvasRef} className="w-full h-full fixed top-0 left-0 z-[-1]" />;
 }
