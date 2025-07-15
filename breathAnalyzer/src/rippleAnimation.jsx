@@ -41,7 +41,7 @@ export default function RippleParticles() {
       if (topic === "d83add731615/COZIR001Test") {
         co2Ref.current = payload.co2Filtered ?? 0;
       }
-      if (topic === "d83add73168b/BME280Test") {
+      if (topic === "d83add7316a5/BME280Test") {
         tempRef.current = payload.temperature ?? 0;
       }
       if (topic === "d83add7316a5/IPS7100Test") {
@@ -55,7 +55,7 @@ export default function RippleParticles() {
         this.y = Math.random() * height;
         this.vx = (Math.random() - 0.5) * 0.5;
         this.vy = (Math.random() - 0.5) * 0.5;
-        this.radius = 25;
+        this.radius = 10;
         this.mass = 4;
         this.color = `hsl(${Math.floor(Math.random() * 360)}, 100%, 60%)`;
       }
@@ -66,6 +66,9 @@ export default function RippleParticles() {
       }
 
       update() {
+        this.radius = 20 + co2Ref.current / 20;
+        //this.vx = (Math.random() * tempRef.current()) / 10;
+        //this.vy = (Math.random() * tempRef.current()) / 10;
         this.x += this.vx;
         this.y += this.vy;
         if (this.x <= 0 || this.x >= width) this.vx *= -1;
@@ -189,9 +192,9 @@ export default function RippleParticles() {
       requestAnimationFrame(animate);
     };
 
-    document.addEventListener("keydown", () => {
-      ripples.push({ x: width / 2, y: height / 2, radius: 0, alpha: 1 });
-    });
+    // document.addEventListener("keydown", () => {
+    //   ripples.push({ x: width / 2, y: height / 2, radius: 0, alpha: 1 });
+    // });
 
     animate();
 

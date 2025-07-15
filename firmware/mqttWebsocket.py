@@ -58,11 +58,11 @@ async def broadcast_handler():
 
 # -- MQTT Callbacks --
 def on_connect(client, userdata, flags, rc):
-    logger.info(f"✅ MQTT connected with result code {rc}")
+    logger.info(f"MQTT connected with result code {rc}")
     topics = [
-        "d83add73168b/BME280Test",
+        "d83add7316a5/BME280Test",
         "d83add731615/COZIR001Test",
-        "d83add7316a5/IPS7100Test"
+        "d83add7316a5/IPS7100Test"          # IPS and BME use same bus -> same node
     ]
     for topic in topics:
         client.subscribe(topic)
@@ -133,7 +133,7 @@ async def main():
     
     main_loop = asyncio.get_running_loop()
     
-    logger.info(f"🚀 Starting WebSocket server on ws://{WEBSOCKET_HOST}:{WEBSOCKET_PORT}")
+    logger.info(f"Starting WebSocket server on ws://{WEBSOCKET_HOST}:{WEBSOCKET_PORT}")
     
     broadcast_task = asyncio.create_task(broadcast_handler())
     

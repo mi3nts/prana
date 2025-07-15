@@ -70,19 +70,6 @@ const MQTTWebSocketViewer = () => {
     }
   };
 
-  const manualReconnect = () => {
-    setReconnectAttempts(0);
-    setConnectionStatus('Connecting...');
-    if (socketRef.current) {
-      socketRef.current.close();
-    }
-    connectWebSocket();
-  };
-
-  const clearMessages = () => {
-    setMessages([]);
-  };
-
   useEffect(() => {
     setConnectionStatus('Connecting...');
     connectWebSocket();
@@ -125,35 +112,6 @@ const MQTTWebSocketViewer = () => {
             {connectionStatus}
           </span>
         </div>
-        <div>
-          <button 
-            onClick={manualReconnect}
-            style={{
-              padding: '0.5rem 1rem',
-              marginRight: '0.5rem',
-              backgroundColor: '#2196F3',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Reconnect
-          </button>
-          <button 
-            onClick={clearMessages}
-            style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#f44336',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
-          >
-            Clear Messages
-          </button>
-        </div>
       </div>
 
       <div style={{ marginBottom: '1rem' }}>
@@ -176,7 +134,8 @@ const MQTTWebSocketViewer = () => {
                 marginBottom: '0.5rem', 
                 padding: '0.5rem',
                 backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white',
-                borderRadius: '4px'
+                borderRadius: '4px',
+                color: 'red'
               }}>
                 <div style={{ fontSize: '0.8em', color: '#666' }}>
                   {msg.timestamp}

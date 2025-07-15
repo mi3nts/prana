@@ -1,5 +1,6 @@
 import './assets/circle.svg'
 import { useState, useEffect } from 'react'
+import ParticleCircle from './components/ParticleCircle'
 
 function App() {
   const [scale, setScale] = useState(1)
@@ -16,6 +17,15 @@ function App() {
 
   return (
     <>
+      <div>
+        <ParticleCircle/>
+        <ParticleCircle/>
+        <ParticleCircle/>
+        <ParticleCircle/>
+        <ParticleCircle/>
+        <ParticleCircle/>
+      </div>
+      
       <div
       style={{    //flex box breaks everything don't even try it just use absolute
         position: 'absolute',
