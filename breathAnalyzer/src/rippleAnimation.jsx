@@ -2,11 +2,16 @@ import { useRef, useEffect } from "react";
 
 export default function RippleParticles() {
   const co2Ref = useRef(0);
+  const co2AvgRef = useRef(0);
   const pressureRef = useRef(0);
-  const pmRef = useRef(0);
+  const pcRef = useRef(0);
   const humidRef = useRef(0);
   const canvasRef = useRef(null);
   const tempRef = useRef(0)
+  let previousCo2 = 0
+  let dCo2 = 0
+  let dPc0_5 = 0
+  let previousPc0_5 = 0
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -41,18 +46,26 @@ export default function RippleParticles() {
       console.log(`[WebSocket] ${topic}:`, payload);
 
       if (topic === "d83add7316a5/COZIR001Test") {
+        previousCo2 = co2Ref.current;
+        setTimeout(sleep(), 100)    //dont touch this DONT EVEN CHANGE THE NUMBER
         co2Ref.current = payload.co2Latest ?? 0;
+        co2AvgRef.current = payload.co2Filtered ?? 0
         tempRef.current = (payload.temperature ?? 0);
         humidRef.current = (payload.humidity ?? 0 );
-
       }
       if (topic === "d83add7316a5/BME280Test") {
         pressureRef.current = (payload.pressure ?? 0) / 100;
       }
       if (topic === "d83add7316a5/IPS7100Test") {
-        pmRef.current = parseFloat(payload.pm0_5 ?? 0);
+        previousPc0_5 = pcRef.current
+        setTimeout(sleep(), 100)    //dont touch this DONT EVEN CHANGE THE NUMBER
+        pcRef.current = parseFloat(payload.pc1_0 ?? 0);
       }
     };
+
+    function sleep() {
+      console.log('gay')
+    } 
 
     class Particle {
       constructor() {
@@ -60,7 +73,8 @@ export default function RippleParticles() {
         this.y = Math.random() * height;
         this.vx = (Math.random() - 0.5) * 0.5;
         this.vy = (Math.random() - 0.5) * 0.5;
-        this.radius = 10;
+        this.radius = 20;
+        this.targetRadius = 20;
         this.mass = 4;
 
         const colorPalette = [
@@ -83,8 +97,7 @@ export default function RippleParticles() {
       }
 
       update() {
-
-        const t = Math.min(1,(co2Ref.current)/1000)
+        const t = Math.min(1,(co2Ref.current) / 1000)
 
         const colorStart = "#D4CBB8"; // Soft beige
         const colorEnd = "#B0C4DE";   // Light steel blue
@@ -92,6 +105,27 @@ export default function RippleParticles() {
         this.color = lerpHex(colorStart, colorEnd, t);
 
         const speedMult = 0.5 + (co2Ref.current) / 100;
+        dCo2 = co2Ref.current - previousCo2
+        dPc0_5 = pcRef.current - previousPc0_5
+
+        //  interpolate current radius toward target
+        const lerpSpeed = 0.01; // lower = slower transition
+        if(dCo2 < -60 && ( Math.abs(co2Ref.current - co2AvgRef.current) < 100 || co2Ref.current < co2AvgRef.current)) { //if the rate of change is greater than -10% of current
+          this.targetRadius = 20
+        }
+        else if(co2AvgRef.current < co2Ref.current - 90) {
+          this.targetRadius = 20 + Math.abs(co2AvgRef.current - co2Ref.current) / 5;
+        }
+
+        this.radius += (this.targetRadius - this.radius) * lerpSpeed;
+
+        // if(Math.abs(co2AvgRef.current - co2Ref.current) < 100) {
+        //   //this.targetRadius = 20
+        //   this.radius = 20;
+        // }
+
+        
+        this.radius = Math.min(this.radius, 40)
 
         this.x += this.vx * speedMult;
         this.y += this.vy * speedMult;
@@ -149,7 +183,7 @@ export default function RippleParticles() {
       };
     }
 
-    const particles = Array.from({ length: 60 }, () => new Particle());
+    const particles = Array.from({ length: 35 }, () => new Particle());
     const ripples = [];
 
     const animate = () => {
@@ -160,17 +194,25 @@ export default function RippleParticles() {
       ctx.font = "16px monospace";
       ctx.textAlign = "left";
 
+      const co2AvgText = `CO2Avg: ${co2AvgRef.current.toFixed(1)} ppm`;
       const co2Text = `CO2: ${co2Ref.current.toFixed(1)} ppm`;
       const pressureText = `Pressure: ${pressureRef.current.toFixed(1)} Pa`;
       const tempText = `Temp: ${tempRef.current.toFixed(1)} °C`
-      const pmText = `PM0.5: ${pmRef.current.toFixed(2)} µg/m³`;
-      const humidText = `Humidity: ${humidRef.current.toFixed(1)} %`;
+      const pmText = `PM0.5: ${pcRef.current.toFixed(2)} µg/m³`;
+      const humidText = `Humidity: ${humidRef.current.toFixed(5)} %`;
+      const dCo2Text = `dCo2: ${dCo2.toFixed(1)}`;
+      const dPcText = `dPc: ${dPc0_5.toFixed(1)}`;
 
+      
       ctx.fillText(co2Text, 10, 20);
       ctx.fillText(pressureText, 10, 40);
       ctx.fillText(tempText, 10, 60);
       ctx.fillText(pmText, 10, 80);
       ctx.fillText(humidText, 10, 100);
+      ctx.fillText(co2AvgText, 10, 120);
+      ctx.fillText(dCo2Text, 10, 140);
+      ctx.fillText(dPcText, 10, 160);
+
 
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
