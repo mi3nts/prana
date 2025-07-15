@@ -1,34 +1,42 @@
 import { useRef, useEffect } from "react";
 
 export default function RippleParticles() {
+  const co2Ref = useRef(0);
+  const tempRef = useRef(0);
+  const pmRef = useRef(0);
   const canvasRef = useRef(null);
-  const co2Ref = useRef(null);
-  const tempRef = useRef(null);
-  const pmRef = useRef(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
-    let width = canvas.width = window.innerWidth;
-    let height = canvas.height = window.innerHeight;
+    let width = (canvas.width = window.innerWidth);
+    let height = (canvas.height = window.innerHeight);
 
     const handleResize = () => {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     };
+
     window.addEventListener("resize", handleResize);
 
-    // WebSocket connection
-    const ws = new WebSocket("ws://localhost:5173");
+    const ws = new WebSocket("ws://localhost:8765");
 
     ws.onopen = () => {
-      console.log("🌐 WebSocket connected to MQTT bridge");
+        console.log("WebSocket connected");
+      };
+
+    ws.onerror = (err) => {
+    console.error("WebSocket error:", err);
     };
 
     ws.onmessage = (event) => {
-      try {
-        const { topic, message } = JSON.parse(event.data);
-        const parsed = typeof message === "string" ? JSON.parse(message) : message;
+
+      console.log("Incoming message:", event.data);
+
+      const { topic, message } = JSON.parse(event.data);
+      const payload = typeof message === "string" ? JSON.parse(message) : message;
+
+      console.log(`[WebSocket] ${topic}:`, payload);
 
       if (topic === "d83add731615/COZIR001Test") {
         co2Ref.current = payload.co2Filtered ?? 0;
@@ -92,11 +100,11 @@ export default function RippleParticles() {
 
         const v1 = {
           x: (u1.x * (m1 - m2) + 2 * m2 * u2.x) / (m1 + m2),
-          y: u1.y
+          y: u1.y,
         };
         const v2 = {
           x: (u2.x * (m2 - m1) + 2 * m1 * u1.x) / (m1 + m2),
-          y: u2.y
+          y: u2.y,
         };
 
         const vFinal1 = rotate(v1, -angle);
@@ -112,7 +120,7 @@ export default function RippleParticles() {
     function rotate(velocity, angle) {
       return {
         x: velocity.x * Math.cos(angle) - velocity.y * Math.sin(angle),
-        y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle)
+        y: velocity.x * Math.sin(angle) + velocity.y * Math.cos(angle),
       };
     }
 
@@ -123,7 +131,18 @@ export default function RippleParticles() {
       ctx.fillStyle = "rgba(0, 0, 0, 1)";
       ctx.fillRect(0, 0, width, height);
 
-      // Particle-particle collisions
+      ctx.fillStyle = "white";
+      ctx.font = "16px monospace";
+      ctx.textAlign = "left";
+
+      const co2Text = `CO2: ${co2Ref.current.toFixed(1)} ppm`;
+      const tempText = `Temp: ${tempRef.current.toFixed(1)} °C`;
+      const pmText = `PM2.5: ${pmRef.current.toFixed(2)} µg/m³`;
+
+      ctx.fillText(co2Text, 10, 20);
+      ctx.fillText(tempText, 10, 40);
+      ctx.fillText(pmText, 10, 60);
+
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
           const p1 = particles[i];
@@ -170,13 +189,6 @@ export default function RippleParticles() {
         }
       }
 
-      // Text overlay for sensor values
-      ctx.fillStyle = "white";
-      ctx.font = "16px monospace";
-      ctx.fillText(`CO₂: ${co2Ref.current ?? "---"} ppm`, 20, 30);
-      ctx.fillText(`Temp: ${tempRef.current ?? "---"} °C`, 20, 50);
-      ctx.fillText(`PM2.5: ${pmRef.current ?? "---"} µg/m³`, 20, 70);
-
       requestAnimationFrame(animate);
     };
 
@@ -188,7 +200,6 @@ export default function RippleParticles() {
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      if (ws) ws.close();
     };
   }, []);
 
