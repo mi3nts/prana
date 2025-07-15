@@ -10,7 +10,7 @@ const MQTTWebSocketViewer = () => {
 
   const connectWebSocket = () => {
     try {
-      const socket = new WebSocket('ws://localhost:8765');
+      const socket = new WebSocket('ws://localhost:5173');
       socketRef.current = socket;
 
       socket.onopen = () => {

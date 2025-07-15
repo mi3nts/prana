@@ -19,7 +19,7 @@ export default function RippleParticles() {
     window.addEventListener("resize", handleResize);
 
     // WebSocket connection
-    const ws = new WebSocket("ws://localhost:8765");
+    const ws = new WebSocket("ws://localhost:5173");
 
     ws.onopen = () => {
       console.log("🌐 WebSocket connected to MQTT bridge");

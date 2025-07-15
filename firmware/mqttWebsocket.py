@@ -15,7 +15,7 @@ MQTT_PORT = 8883
 
 # -- WebSocket Configuration --
 WEBSOCKET_HOST = "localhost"
-WEBSOCKET_PORT = 8765
+WEBSOCKET_PORT = 5173
 
 # -- Global variables (accessible from all functions) --
 connected_clients = set()
