@@ -66,11 +66,13 @@ export default function RippleParticles() {
       }
 
       update() {
+        const speedMult = 0.5 + (pressureRef.current - 950) / 1000;
+
         this.radius = 20 + co2Ref.current / 20;
         //this.vx = (Math.random() * pressureRef.current()) / 10;
         //this.vy = (Math.random() * pressureRef.current()) / 10;
-        this.x += this.vx;
-        this.y += this.vy;
+        this.x += this.vx * speedMult;
+        this.y += this.vy * speedMult;
         if (this.x <= 0 || this.x >= width) this.vx *= -1;
         if (this.y <= 0 || this.y >= height) this.vy *= -1;
       }
