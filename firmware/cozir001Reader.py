@@ -6,6 +6,7 @@ import time
 from mintsXU4 import mintsSensorReader as mSR
 from collections import OrderedDict
 import datetime
+import threading
 
 
 sensor = Cozir('/dev/serial0') 
@@ -13,6 +14,11 @@ sensor = Cozir('/dev/serial0')
 checkTrials  = 0
 loopInterval = 2 
 
+serial_lock = threading.Lock()
+
+def safe_readCO2(sensor, with_filter):
+    with serial_lock:
+        return sensor.readCO2(with_filter)
 
 def main(loopInterval):
     startTime    = time.time()
