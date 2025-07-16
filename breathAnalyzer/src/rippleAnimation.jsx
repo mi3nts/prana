@@ -59,12 +59,12 @@ export default function RippleParticles() {
       if (topic === "d83add7316a5/IPS7100Test") {
         previousPc0_5 = pcRef.current
         setTimeout(sleep(), 100)    //dont touch this DONT EVEN CHANGE THE NUMBER
-        pcRef.current = parseFloat(payload.pc1_0 ?? 0);
+        pcRef.current = parseFloat(payload.pc0_5 ?? 0);
       }
     };
 
     function sleep() {
-      console.log('gay')
+      console.log('sleep 100 ms')
     } 
 
     class Particle {
