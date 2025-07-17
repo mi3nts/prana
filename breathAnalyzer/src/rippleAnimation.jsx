@@ -1,4 +1,5 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
+import ScrollList from "./components/listScroll";
 
 export default function RippleParticles() {
   const co2Ref = useRef(0);
@@ -8,10 +9,20 @@ export default function RippleParticles() {
   const humidRef = useRef(0);
   const canvasRef = useRef(null);
   const tempRef = useRef(0)
+  const monitorFps = 120
+  const numParticles = 35
+  let frameCounter = 0
+  let seconds = 0
   let previousCo2 = 0
+  let prevFilteredCo2 = 0
+  let previousPc0_5 = 0
+  let previousHumidity = 0
+  let dFilteredCo2 = 0
+  let dHumidity = 0
   let dCo2 = 0
   let dPc0_5 = 0
-  let previousPc0_5 = 0
+
+  const [showScroll, setShowScroll] = useState(false);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -47,6 +58,8 @@ export default function RippleParticles() {
 
       if (topic === "d83add7316a5/COZIR001Test") {
         previousCo2 = co2Ref.current;
+        prevFilteredCo2 = co2AvgRef.current
+        previousHumidity = humidRef.current
         setTimeout(sleep(), 100)    //dont touch this DONT EVEN CHANGE THE NUMBER
         co2Ref.current = payload.co2Latest ?? 0;
         co2AvgRef.current = payload.co2Filtered ?? 0
@@ -76,19 +89,7 @@ export default function RippleParticles() {
         this.radius = 20;
         this.targetRadius = 20;
         this.mass = 4;
-
-        const colorPalette = [
-            "#D4CBB8", // soft beige
-            "#A3BFD9", // light blue-gray
-            "#B8B3A9", // sand
-            "#8FA3B0", // desaturated blue
-            "#D6CFC4", // cream
-            "#AEC6CF", // powder blue
-            "#C2B280", // khaki
-            "#B0C4DE", // light steel blue
-            ]
-
-        this.color = `hsl(${"#D4CBB8"}, 100%, 60%)`;
+        this.color = `#FFFFFF` //fill color = white
       }
 
       applyForce(fx, fy) {
@@ -97,34 +98,34 @@ export default function RippleParticles() {
       }
 
       update() {
-        const t = Math.min(1,(co2Ref.current) / 1000)
-
-        const colorStart = "#D4CBB8"; // Soft beige
-        const colorEnd = "#B0C4DE";   // Light steel blue
-
-        this.color = lerpHex(colorStart, colorEnd, t);
-
+        if (seconds >= 3 && !showScroll) {
+          setShowScroll(true);
+        }
         const speedMult = 0.5 + (co2Ref.current) / 100;
+        if(this.targetRadius > 21 && !showScroll) {  // measuring the amount of time that the particles are expanded
+          frameCounter++
+          seconds = frameCounter / (monitorFps * numParticles)   
+        }
+        else {
+          frameCounter = 0
+          seconds = 0
+        }
         dCo2 = co2Ref.current - previousCo2
+        dFilteredCo2 = co2AvgRef.current - prevFilteredCo2
         dPc0_5 = pcRef.current - previousPc0_5
+        
 
         //  interpolate current radius toward target
         const lerpSpeed = 0.01; // lower = slower transition
-        if(dCo2 < -60 && ( Math.abs(co2Ref.current - co2AvgRef.current) < 100 || co2Ref.current < co2AvgRef.current)) { //if the rate of change is greater than -10% of current
-          this.targetRadius = 20
+
+        this.targetRadius = 20
+        
+        if(dFilteredCo2 >= 10) {
+          this.targetRadius = 50
         }
-        else if(co2AvgRef.current < co2Ref.current - 90) {
-          this.targetRadius = 20 + Math.abs(co2AvgRef.current - co2Ref.current) / 5;
-        }
+
 
         this.radius += (this.targetRadius - this.radius) * lerpSpeed;
-
-        // if(Math.abs(co2AvgRef.current - co2Ref.current) < 100) {
-        //   //this.targetRadius = 20
-        //   this.radius = 20;
-        // }
-
-        
         this.radius = Math.min(this.radius, 40)
 
         this.x += this.vx * speedMult;
@@ -137,7 +138,7 @@ export default function RippleParticles() {
       draw() {
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
-        // ctx.fillStyle = this.color;
+        ctx.fillStyle = this.color;
         ctx.fill();
       }
     }
@@ -183,7 +184,7 @@ export default function RippleParticles() {
       };
     }
 
-    const particles = Array.from({ length: 35 }, () => new Particle());
+    const particles = Array.from({ length: numParticles }, () => new Particle());
     const ripples = [];
 
     const animate = () => {
@@ -202,8 +203,11 @@ export default function RippleParticles() {
       const humidText = `Humidity: ${humidRef.current.toFixed(5)} %`;
       const dCo2Text = `dCo2: ${dCo2.toFixed(1)}`;
       const dPcText = `dPc: ${dPc0_5.toFixed(1)}`;
+      const dFilteredText = `dFCo2: ${dFilteredCo2.toFixed(1)}`;
+      const dHumidityText = `dHumid: ${dHumidity.toFixed(1)}`;
+      const secText = `${seconds}`
+      const scrollText = `${showScroll}`
 
-      
       ctx.fillText(co2Text, 10, 20);
       ctx.fillText(pressureText, 10, 40);
       ctx.fillText(tempText, 10, 60);
@@ -212,7 +216,10 @@ export default function RippleParticles() {
       ctx.fillText(co2AvgText, 10, 120);
       ctx.fillText(dCo2Text, 10, 140);
       ctx.fillText(dPcText, 10, 160);
-
+      ctx.fillText(dFilteredText, 10, 180);
+      ctx.fillText(dHumidityText, 10, 200);
+      ctx.fillText(secText, 10, 220);
+      ctx.fillText(scrollText, 10, 240)
 
       for (let i = 0; i < particles.length; i++) {
         for (let j = i + 1; j < particles.length; j++) {
@@ -263,10 +270,6 @@ export default function RippleParticles() {
       requestAnimationFrame(animate);
     };
 
-    // document.addEventListener("keydown", () => {
-    //   ripples.push({ x: width / 2, y: height / 2, radius: 0, alpha: 1 });
-    // });
-
     animate();
 
     return () => {
@@ -308,5 +311,10 @@ export default function RippleParticles() {
   }
   
 
-  return <canvas ref={canvasRef} className="w-full h-full fixed top-0 left-0 z-[-1]" />;
+  return (
+    <>
+      <canvas ref={canvasRef} className="w-full h-full fixed top-0 left-0 z-[-1]" />
+      {showScroll && <ScrollList />}
+    </>
+  );
 }
