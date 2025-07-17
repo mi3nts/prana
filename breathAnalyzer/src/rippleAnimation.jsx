@@ -97,9 +97,10 @@ export default function RippleParticles() {
         dCo2 = co2Ref.current - previousCo2;
         dFilteredCo2 = co2AvgRef.current - prevFilteredCo2;
         dPc0_5 = pcRef.current - previousPc0_5;
+        dHumidity = humidRef.current - previousHumidity;
 
         this.targetRadius = 20;
-        if (dFilteredCo2 >= 10) {
+        if (dFilteredCo2 >= 8) {
           this.targetRadius = 50;
         }
 
