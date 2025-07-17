@@ -1,4 +1,5 @@
-// ScrollList.js
+// taken from https://codepen.io/hoqqanen/pen/zvqGEG
+
 import { useEffect, useRef } from "react";
 import './listScroll.scss'
 
@@ -60,7 +61,7 @@ function easeInOut(t) {
 
 export default function ScrollList() {
   const groupRef = useRef(null);
-  console.log("scrolllist mounted")
+  console.log("ScrollList mounted")
 
   useEffect(() => {
     const shuffled = shuffleArray([...phrases]);
@@ -104,7 +105,15 @@ export default function ScrollList() {
   }, []);
 
   return (
-    <div className="fixed top-0 left-0 w-full h-full z-10 pointer-events-none">
+      <div style={{
+          position: "fixed",
+          top: "50vh",
+          left: "50vw",
+          width: "100vw",
+          height: "100vh",
+          zIndex: 9999,
+          pointerEvents: "none",
+      }}>
       <svg width="100%" height="100%">
         <defs>
           <mask id="mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
@@ -114,7 +123,7 @@ export default function ScrollList() {
               <stop stopColor="white" stopOpacity="1" offset="70%" />
               <stop stopColor="white" stopOpacity="0" offset="100%" />
             </linearGradient>
-            <rect width="100%" height="100%" fill="url(#linearGradient)" />
+            <rect width="20%" height="20%" fill="url(#linearGradient)" />
           </mask>
         </defs>
         <g style={{ mask: "url(#mask)" }}>

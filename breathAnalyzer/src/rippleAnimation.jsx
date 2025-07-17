@@ -110,6 +110,7 @@ export default function RippleParticles() {
           frameCounter = 0
           seconds = 0
         }
+        // changes in readings
         dCo2 = co2Ref.current - previousCo2
         dFilteredCo2 = co2AvgRef.current - prevFilteredCo2
         dPc0_5 = pcRef.current - previousPc0_5
@@ -311,10 +312,44 @@ export default function RippleParticles() {
   }
   
 
-  return (
-    <>
-      <canvas ref={canvasRef} className="w-full h-full fixed top-0 left-0 z-[-1]" />
-      {showScroll && <ScrollList />}
-    </>
-  );
+return (
+  <>
+    <div
+      style={{
+        zIndex: 0,
+        overflow: 'hidden',
+      }}
+    >
+      <canvas
+        ref={canvasRef}
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          zIndex: 1,
+        }}
+      />
+    </div>
+
+    {seconds >= 3 && (
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          backdropFilter: "blur(8px)",
+          WebkitBackdropFilter: "blur(8px)", // safari support
+          zIndex: 1000, // above canvas, below scroll text
+          pointerEvents: "none",
+        }}
+      />
+    )}
+      {setShowScroll && <ScrollList/>}
+  </>
+);
+
 }
