@@ -4,11 +4,8 @@ import { useEffect, useRef } from "react";
 import './listScroll.scss'
 
 const phrases = [
-  "Feeding unicorns", "Grabbing tasks", "Collating conversations", "Reticulating splines",
-  "Pondering emptiness", "Considering alternatives", "Shuffling bits", "Celebrating moments",
-  "Generating phrases", "Simulating workflow", "Empowering humanity", "Being aspirational",
-  "Doing the hokey pokey", "Bueller", "Cracking jokes", "Slacking off"
-];
+  'example phrase', 'example phrase2','example phrase3','example phrase4', 
+  'example phrase5', 'example phrase6', 'example phrase7','example phrase8'];
 
 const checkmarkIdPrefix = "loadingCheckSVG-";
 const checkmarkCircleIdPrefix = "loadingCheckCircleSVG-";
