@@ -169,7 +169,7 @@ export default function RippleParticles() {
     let elevatedStartTime = null;
 
     const animate = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 1)";
+      ctx.fillStyle = "rgba(65, 170, 245, 1)";
       ctx.fillRect(0, 0, width, height);
 
       // Display text
