@@ -4,17 +4,15 @@ import ScrollList from "./components/listScroll";
 export default function RippleParticles() {
   const co2Ref = useRef(0);
   const co2AvgRef = useRef(0);
-  const pressureRef = useRef(0);
-  const pcRef = useRef(0);
+  // const pressureRef = useRef(0);
+  // const pcRef = useRef(0);
   const humidRef = useRef(0);
   const tempRef = useRef(0);
   const canvasRef = useRef(null);
   const numParticles = 35;
-  const monitorFps = 120;
 
   let previousCo2 = 0;
   let prevFilteredCo2 = 0;
-  let previousPc0_5 = 0;
   let previousHumidity = 0;
   let dFilteredCo2 = 0;
   let dHumidity = 0;
@@ -54,22 +52,22 @@ export default function RippleParticles() {
         previousCo2 = co2Ref.current;
         prevFilteredCo2 = co2AvgRef.current;
         previousHumidity = humidRef.current;
-        setTimeout(sleep, 100);
+        setTimeout(sleep, 100);       // do NOT REMOVE THIS DONT EVEN CHANGE THE NUBMER
         co2Ref.current = payload.co2Latest ?? 0;
         co2AvgRef.current = payload.co2Filtered ?? 0;
         tempRef.current = payload.temperature ?? 0;
         humidRef.current = payload.humidity ?? 0;
       }
 
-      if (topic === "d83add7316a5/BME280Test") {
-        pressureRef.current = (payload.pressure ?? 0) / 100;
-      }
+      // if (topic === "d83add7316a5/BME280Test") {
+      //   pressureRef.current = (payload.pressure ?? 0) / 100;
+      // }
 
-      if (topic === "d83add7316a5/IPS7100Test") {
-        previousPc0_5 = pcRef.current;
-        setTimeout(sleep, 100);
-        pcRef.current = parseFloat(payload.pc0_5 ?? 0);
-      }
+      // if (topic === "d83add7316a5/IPS7100Test") {
+      //   previousPc0_5 = pcRef.current;
+      //   setTimeout(sleep, 100);
+      //   pcRef.current = parseFloat(payload.pc0_5 ?? 0);
+      // }
     };
 
     function sleep() {
@@ -88,15 +86,10 @@ export default function RippleParticles() {
         this.color = "#FFFFFF";
       }
 
-      applyForce(fx, fy) {
-        this.vx += fx;
-        this.vy += fy;
-      }
-
       update() {
         dCo2 = co2Ref.current - previousCo2;
         dFilteredCo2 = co2AvgRef.current - prevFilteredCo2;
-        dPc0_5 = pcRef.current - previousPc0_5;
+        //dPc0_5 = pcRef.current - previousPc0_5;
         dHumidity = humidRef.current - previousHumidity;
 
         this.targetRadius = 20;
@@ -173,20 +166,19 @@ export default function RippleParticles() {
       ctx.fillStyle = "rgba(65, 170, 245, 1)";
       ctx.fillRect(0, 0, width, height);
 
-      // Display text
       ctx.fillStyle = "white";
       ctx.font = "16px monospace";
       ctx.textAlign = "left";
 
       ctx.fillText(`CO2: ${co2Ref.current.toFixed(1)} ppm`, 10, 20);
-      ctx.fillText(`Pressure: ${pressureRef.current.toFixed(1)} Pa`, 10, 40);
-      ctx.fillText(`Temp: ${tempRef.current.toFixed(1)} °C`, 10, 60);
-      ctx.fillText(`PM0.5: ${pcRef.current.toFixed(2)} µg/m³`, 10, 80);
-      ctx.fillText(`Humidity: ${humidRef.current.toFixed(5)} %`, 10, 100);
-      ctx.fillText(`CO2Avg: ${co2AvgRef.current.toFixed(1)} ppm`, 10, 120);
-      ctx.fillText(`dCo2: ${dCo2.toFixed(1)}`, 10, 140);
-      ctx.fillText(`dPc: ${dPc0_5.toFixed(1)}`, 10, 160);
-      ctx.fillText(`dFCo2: ${dFilteredCo2.toFixed(1)}`, 10, 180);
+      // ctx.fillText(`Pressure: ${pressureRef.current.toFixed(1)} Pa`, 10, 40);
+      ctx.fillText(`Temp: ${tempRef.current.toFixed(1)} °C`, 10, 40);
+      // ctx.fillText(`PC0.5: ${pcRef.current.toFixed(2)} µg/m³`, 10, 80);
+      ctx.fillText(`Humidity: ${humidRef.current.toFixed(1)} %`, 10, 60);
+      ctx.fillText(`CO2Avg: ${co2AvgRef.current.toFixed(1)} ppm`, 10, 80);
+      ctx.fillText(`dCo2: ${dCo2.toFixed(1)}`, 10, 100);
+      // ctx.fillText(`dPc: ${dPc0_5.toFixed(1)}`, 10, 160);
+      ctx.fillText(`dFCo2: ${dFilteredCo2.toFixed(1)}`, 10, 120);
 
       // Track elevated condition
       const now = Date.now();
@@ -219,34 +211,6 @@ export default function RippleParticles() {
       for (const p of particles) {
         p.update();
         p.draw();
-      }
-
-      for (let i = ripples.length - 1; i >= 0; i--) {
-        const r = ripples[i];
-        ctx.beginPath();
-        ctx.arc(r.x, r.y, r.radius, 0, 2 * Math.PI);
-        ctx.strokeStyle = `rgba(255, 255, 255, ${r.alpha})`;
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
-        r.radius += 5;
-        r.alpha -= 0.01;
-
-        for (const p of particles) {
-          const dx = p.x - r.x;
-          const dy = p.y - r.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < r.radius + 20 && dist > r.radius - 20) {
-            const force = 0.5;
-            const fx = (dx / dist) * force;
-            const fy = (dy / dist) * force;
-            p.applyForce(fx, fy);
-          }
-        }
-
-        if (r.alpha <= 0) {
-          ripples.splice(i, 1);
-        }
       }
 
       requestAnimationFrame(animate);
