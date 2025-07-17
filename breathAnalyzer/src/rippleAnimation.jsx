@@ -249,6 +249,7 @@ export default function RippleParticles() {
             height: "100vh",
             backdropFilter: "blur(8px)",
             WebkitBackdropFilter: "blur(8px)",
+            backgroundColor: "rgba(0, 0, 0, 0.4)",
             zIndex: 1000,
             pointerEvents: "none",
           }}
