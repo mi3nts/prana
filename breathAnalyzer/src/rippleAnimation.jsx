@@ -194,7 +194,7 @@ export default function RippleParticles() {
       if (isElevated) {
         if (!elevatedStartTime) elevatedStartTime = now;
         const elapsed = (now - elevatedStartTime) / 1000;
-        if (elapsed >= 3 && !showScroll) {
+        if (elapsed >= 5 && !showScroll) {
           setShowScroll(true);
         }
       } else {
