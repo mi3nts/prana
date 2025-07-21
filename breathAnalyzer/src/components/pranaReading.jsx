@@ -15,7 +15,7 @@ const pranaDesc = [
   "Structured like your project timeline—steady but uninspired. Prāṇa conforms to code... until debug mode is triggered.",
   "Measured and polite, this breath knows how to RSVP. Prāṇa adapts. Efficient. Predictable. Engineer-approved.",
   "Barely there, this breath stays hidden. Prāṇa is introverted today—maybe it skipped breakfast?",
-  "ooga booga"
+  "Maybe blow harder?"
 ];
 
 export default function PranaReading({ maxdFCo2, co2Threshold }) {

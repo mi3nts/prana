@@ -216,12 +216,12 @@ export default function RippleParticles() {
       ctx.fillStyle = "rgba(65, 170, 245, 1)";
       ctx.fillRect(0, 0, width, height);
 
-      ctx.fillStyle = "white";
-      ctx.font = "16px monospace";
-      ctx.textAlign = "left";
-      ctx.fillText(`prev: ${prevFilteredCo2Ref.current.toFixed(1)}`, 10, 80);
-      ctx.fillText(`curr: ${co2Ref.current.toFixed(1)}`, 10, 100);
-      ctx.fillText(`maxFCo2: ${maxdFco2Ref.current.toFixed(1)}`, 10, 120);
+      // ctx.fillStyle = "white";
+      // ctx.font = "16px monospace";
+      // ctx.textAlign = "left";
+      // ctx.fillText(`prev: ${prevFilteredCo2Ref.current.toFixed(1)}`, 10, 80);
+      // ctx.fillText(`curr: ${co2Ref.current.toFixed(1)}`, 10, 100);
+      // ctx.fillText(`maxFCo2: ${maxdFco2Ref.current.toFixed(1)}`, 10, 120);
 
       const now = Date.now();
 
