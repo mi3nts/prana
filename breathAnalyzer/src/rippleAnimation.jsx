@@ -10,6 +10,8 @@ export default function RippleParticles() {
   const tempRef = useRef(0);
   const canvasRef = useRef(null);
   const numParticles = 35;
+  const co2Threshold = 8;
+  const timeElapsed = 5;
 
   let previousCo2 = 0;
   let prevFilteredCo2 = 0;
@@ -170,24 +172,24 @@ export default function RippleParticles() {
       ctx.font = "16px monospace";
       ctx.textAlign = "left";
 
-      ctx.fillText(`CO2: ${co2Ref.current.toFixed(1)} ppm`, 10, 20);
-      // ctx.fillText(`Pressure: ${pressureRef.current.toFixed(1)} Pa`, 10, 40);
-      ctx.fillText(`Temp: ${tempRef.current.toFixed(1)} °C`, 10, 40);
-      // ctx.fillText(`PC0.5: ${pcRef.current.toFixed(2)} µg/m³`, 10, 80);
-      ctx.fillText(`Humidity: ${humidRef.current.toFixed(1)} %`, 10, 60);
-      ctx.fillText(`CO2Avg: ${co2AvgRef.current.toFixed(1)} ppm`, 10, 80);
-      ctx.fillText(`dCo2: ${dCo2.toFixed(1)}`, 10, 100);
-      // ctx.fillText(`dPc: ${dPc0_5.toFixed(1)}`, 10, 160);
-      ctx.fillText(`dFCo2: ${dFilteredCo2.toFixed(1)}`, 10, 120);
+      // ctx.fillText(`CO2: ${co2Ref.current.toFixed(1)} ppm`, 10, 20);
+      // // ctx.fillText(`Pressure: ${pressureRef.current.toFixed(1)} Pa`, 10, 40);
+      // ctx.fillText(`Temp: ${tempRef.current.toFixed(1)} °C`, 10, 40);
+      // // ctx.fillText(`PC0.5: ${pcRef.current.toFixed(2)} µg/m³`, 10, 80);
+      // ctx.fillText(`Humidity: ${humidRef.current.toFixed(1)} %`, 10, 60);
+      // ctx.fillText(`CO2Avg: ${co2AvgRef.current.toFixed(1)} ppm`, 10, 80);
+      // ctx.fillText(`dCo2: ${dCo2.toFixed(1)}`, 10, 100);
+      // // ctx.fillText(`dPc: ${dPc0_5.toFixed(1)}`, 10, 160);
+      // ctx.fillText(`dFCo2: ${dFilteredCo2.toFixed(1)}`, 10, 120);
 
       // Track elevated condition
       const now = Date.now();
-      const isElevated = dFilteredCo2 >= 10;
+      const isElevated = dFilteredCo2 >= co2Threshold;
 
       if (isElevated) {
         if (!elevatedStartTime) elevatedStartTime = now;
         const elapsed = (now - elevatedStartTime) / 1000;
-        if (elapsed >= 5 && !showScroll) {
+        if (elapsed >= timeElapsed && !showScroll) {
           setShowScroll(true);
         }
       } else {
