@@ -1,34 +1,48 @@
 import { useRef, useEffect, useState } from "react";
 import ScrollList from "./components/listScroll";
 import PranaReading from "./components/pranaReading";
-//import PranaReading from "./components/pranaReading";
 
 export default function RippleParticles() {
   const co2Ref = useRef(0);
   const co2AvgRef = useRef(0);
-  // const pressureRef = useRef(0);
-  // const pcRef = useRef(0);
   const humidRef = useRef(0);
   const tempRef = useRef(0);
   const canvasRef = useRef(null);
   const numParticles = 35;
   const co2Threshold = 8;
-  const timeElapsed = 3;
+  const timeElapsed = 5;
 
   let previousCo2 = 0;
   let prevFilteredCo2 = 0;
   let previousHumidity = 0;
   let dFilteredCo2 = 0;
-  const maxdFco2Ref = useRef(0);
-  const [, forceUpdate] = useState(0); 
   let dHumidity = 0;
   let dCo2 = 0;
-  let dPc0_5 = 0;
-
-  const [isActive, setIsActive] = useState(false);
-  const [countdown, setCountdown] = useState(0);
 
   const [showScroll, setShowScroll] = useState(false);
+  const [isActive, setIsActive] = useState(false);
+  const [countdown, setCountdown] = useState(0);
+  const [maxdFco2, setMaxdFco2] = useState(0);
+
+  // --- Countdown and spacebar activation ---
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.code === "Space" && !isActive && countdown === 0) {
+        let t = 3;
+        setCountdown(t);
+        const interval = setInterval(() => {
+          t -= 1;
+          setCountdown(t);
+          if (t <= 0) {
+            clearInterval(interval);
+            setIsActive(true);
+          }
+        }, 1000);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isActive, countdown]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,7 +54,6 @@ export default function RippleParticles() {
       width = canvas.width = window.innerWidth;
       height = canvas.height = window.innerHeight;
     };
-
     window.addEventListener("resize", handleResize);
 
     const ws = new WebSocket("ws://localhost:8765");
@@ -58,25 +71,17 @@ export default function RippleParticles() {
       const payload = typeof message === "string" ? JSON.parse(message) : message;
 
       if (topic === "d83add7316a5/COZIR001Test") {
+        if (!isActive) return;  // BLOCK updates until countdown finishes
+
         previousCo2 = co2Ref.current;
         prevFilteredCo2 = co2AvgRef.current;
         previousHumidity = humidRef.current;
-        setTimeout(sleep, 100);       // do NOT REMOVE THIS DONT EVEN CHANGE THE NUBMER
+        setTimeout(sleep, 100);
         co2Ref.current = payload.co2Latest ?? 0;
         co2AvgRef.current = payload.co2Filtered ?? 0;
         tempRef.current = payload.temperature ?? 0;
         humidRef.current = payload.humidity ?? 0;
       }
-
-      // if (topic === "d83add7316a5/BME280Test") {
-      //   pressureRef.current = (payload.pressure ?? 0) / 100;
-      // }
-
-      // if (topic === "d83add7316a5/IPS7100Test") {
-      //   previousPc0_5 = pcRef.current;
-      //   setTimeout(sleep, 100);
-      //   pcRef.current = parseFloat(payload.pc0_5 ?? 0);
-      // }
     };
 
     function sleep() {
@@ -98,11 +103,10 @@ export default function RippleParticles() {
       update() {
         dCo2 = co2Ref.current - previousCo2;
         dFilteredCo2 = co2AvgRef.current - prevFilteredCo2;
-        //dPc0_5 = pcRef.current - previousPc0_5;
         dHumidity = humidRef.current - previousHumidity;
-        if (!showScroll && dFilteredCo2 > maxdFco2Ref.current && dFilteredCo2 < 20) {          
-          maxdFco2Ref.current = dFilteredCo2;
-          forceUpdate((x) => x + 1); // Triggers re-render
+
+        if (dFilteredCo2 > maxdFco2 && dFilteredCo2 < 50) {
+          setMaxdFco2(dFilteredCo2);
         }
 
         this.targetRadius = 20;
@@ -118,8 +122,8 @@ export default function RippleParticles() {
         this.x += this.vx * speedMult;
         this.y += this.vy * speedMult;
 
-        if (this.x <= 0 || this.x >= width) this.vx *= -1;
-        if (this.y <= 0 || this.y >= height) this.vy *= -1;
+        if (this.x <= 0 + this.radius || this.x >= width - this.radius) this.vx *= -1;
+        if (this.y <= 0 + this.radius || this.y >= height - this.radius) this.vy *= -1;
       }
 
       draw() {
@@ -172,7 +176,6 @@ export default function RippleParticles() {
     }
 
     const particles = Array.from({ length: numParticles }, () => new Particle());
-    const ripples = [];
     let elevatedStartTime = null;
 
     const animate = () => {
@@ -182,20 +185,8 @@ export default function RippleParticles() {
       ctx.fillStyle = "white";
       ctx.font = "16px monospace";
       ctx.textAlign = "left";
+      ctx.fillText(`dFCo2: ${maxdFco2.toFixed(1)}`, 10, 120);
 
-      
-
-      // ctx.fillText(`CO2: ${co2Ref.current.toFixed(1)} ppm`, 10, 20);
-      // // ctx.fillText(`Pressure: ${pressureRef.current.toFixed(1)} Pa`, 10, 40);
-      // ctx.fillText(`Temp: ${tempRef.current.toFixed(1)} °C`, 10, 40);
-      // // ctx.fillText(`PC0.5: ${pcRef.current.toFixed(2)} µg/m³`, 10, 80);
-      // ctx.fillText(`Humidity: ${humidRef.current.toFixed(1)} %`, 10, 60);
-      // ctx.fillText(`CO2Avg: ${co2AvgRef.current.toFixed(1)} ppm`, 10, 80);
-      // ctx.fillText(`dCo2: ${dCo2.toFixed(1)}`, 10, 100);
-      // // ctx.fillText(`dPc: ${dPc0_5.toFixed(1)}`, 10, 160);
-      ctx.fillText(`dFCo2: ${maxdFco2Ref.current.toFixed(1)}`, 10, 120);
-
-      // Track elevated condition
       const now = Date.now();
       const isElevated = dFilteredCo2 >= co2Threshold;
 
@@ -207,7 +198,7 @@ export default function RippleParticles() {
         }
       } else {
         elevatedStartTime = null;
-        if (showScroll) setShowScroll(false);
+        // if (showScroll) setShowScroll(false);
       }
 
       for (let i = 0; i < particles.length; i++) {
@@ -236,7 +227,7 @@ export default function RippleParticles() {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [isActive, maxdFco2, showScroll]);
 
   return (
     <>
@@ -253,6 +244,25 @@ export default function RippleParticles() {
           }}
         />
       </div>
+
+      {!isActive && countdown > 0 && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            fontSize: "4rem",
+            color: "white",
+            zIndex: 9999,
+            pointerEvents: "none",
+            userSelect: "none",
+            fontWeight: "bold",
+          }}
+        >
+          {countdown}
+        </div>
+      )}
 
       {showScroll && (
         <div
@@ -272,10 +282,9 @@ export default function RippleParticles() {
       )}
 
       {showScroll && <ScrollList />}
-      {showScroll && <PranaReading maxdFCo2 = {maxdFco2Ref.current} co2Threshold = {co2Threshold} /> }
-
+      {showScroll && (
+        <PranaReading maxdFCo2={maxdFco2} co2Threshold={co2Threshold} />
+      )}
     </>
   );
 }
-
-
