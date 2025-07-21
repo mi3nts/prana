@@ -102,18 +102,21 @@ export default function ScrollList() {
   }, []);
 
   return (
-      <div style={{
+      <div
+        style={{
           position: "fixed",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",  // center the icon
-        width: "400px",  
-        height: "200px", 
-        zIndex: 9999,
-        pointerEvents: "none",
-      }}>
-      <svg width="100%" height="100%">
-        <defs>
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          zIndex: 9999,
+          pointerEvents: "none",
+        }}>
+        <svg viewBox="0 0 400 300" width="400" height="300">
+          <defs>
           <mask id="mask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse">
             <linearGradient id="linearGradient" gradientUnits="objectBoundingBox" x2="0" y2="1">
               <stop stopColor="white" stopOpacity="0" offset="0%" />
@@ -125,8 +128,8 @@ export default function ScrollList() {
           </mask>
         </defs>
         <g style={{ mask: "url(#mask)" }}>
-          <g id="phrases" ref={groupRef}></g>
-        </g>
+          <g id="phrases" ref={groupRef} transform="translate(-25, 0)"></g>
+       </g>
       </svg>
     </div>
   );

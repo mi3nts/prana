@@ -9,7 +9,6 @@ export default function RippleParticles() {
   const tempRef = useRef(0);
   const canvasRef = useRef(null);
   
-  // Move these to useRef to persist across re-renders
   const previousCo2Ref = useRef(0);
   const prevFilteredCo2Ref = useRef(0);
   const previousHumidityRef = useRef(0);
@@ -27,17 +26,17 @@ export default function RippleParticles() {
   const [isActive, setIsActive] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [maxdFco2, setMaxdFco2] = useState(0);
+  const [lockedMaxdFco2, setLockedMaxdFco2] = useState(0);
+  const [lockedCo2Threshold, setLockedCo2Threshold] = useState(co2Threshold);
   const maxdFco2Ref = useRef(0);
   
-  // Add a ref to track isActive state inside the useEffect
   const isActiveRef = useRef(false);
   
-  // Update the ref whenever isActive changes
   useEffect(() => {
     isActiveRef.current = isActive;
   }, [isActive]);
 
-  // --- Countdown and spacebar activation ---
+  // handle pressing space bar and starting timer
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.code === "Space" && !isActive && countdown === 0) {
@@ -57,12 +56,14 @@ export default function RippleParticles() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isActive, countdown]);
 
-  // Add useEffect to handle PranaReading fade in after showScroll appears
   useEffect(() => {
     if (showScroll) {
       const timer = setTimeout(() => {
+        // Lock the data when PranaReading becomes visible
+        setLockedMaxdFco2(maxdFco2Ref.current);
+        setLockedCo2Threshold(co2Threshold);
         setShowPranaReading(true);
-      }, timeElapsed * 1000); // Convert seconds to milliseconds
+      }, (timeElapsed + 1) * 1000); 
 
       return () => clearTimeout(timer);
     } else {
@@ -97,9 +98,7 @@ export default function RippleParticles() {
       const payload = typeof message === "string" ? JSON.parse(message) : message;
 
       if (topic === "d83add7316a5/COZIR001Test") {
-        // Only process sensor data after timer goes off
         if (isActiveRef.current) {
-          // Store previous values before updating current ones
           previousCo2Ref.current = co2Ref.current;
           prevFilteredCo2Ref.current = co2AvgRef.current;
           previousHumidityRef.current = humidRef.current;
@@ -107,7 +106,6 @@ export default function RippleParticles() {
           setTimeout(sleep, 100);
         }
         
-        // Always update the current sensor readings (for display and calculations)
         co2Ref.current = payload.co2Latest ?? 0;
         co2AvgRef.current = payload.co2Filtered ?? 0;
         tempRef.current = payload.temperature ?? 0;
@@ -132,9 +130,7 @@ export default function RippleParticles() {
       }
 
       update() {
-        // Only calculate deltas and update particle behavior if active
         if (isActiveRef.current) {
-          // Calculate deltas using ref values
           dCo2Ref.current = co2Ref.current - previousCo2Ref.current;
           dFilteredCo2Ref.current = co2AvgRef.current - prevFilteredCo2Ref.current;
           dHumidityRef.current = humidRef.current - previousHumidityRef.current;
@@ -149,7 +145,6 @@ export default function RippleParticles() {
             this.targetRadius = 50;
           }
         } else {
-          // When not active, keep particles at default state
           this.targetRadius = 20;
         }
 
@@ -230,7 +225,6 @@ export default function RippleParticles() {
 
       const now = Date.now();
 
-      // Set activeStartTime when isActive becomes true
       if (isActiveRef.current && !activeStartTime) {
         activeStartTime = now;
       }
@@ -277,7 +271,7 @@ export default function RippleParticles() {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, []); // Remove dependencies to prevent re-creation
+  }, []); 
 
   return (
     <>
@@ -340,7 +334,7 @@ export default function RippleParticles() {
             animation: "fadeIn 1s ease-in-out",
           }}
         >
-          <PranaReading maxdFCo2={maxdFco2Ref.current} co2Threshold={co2Threshold} />
+          <PranaReading maxdFCo2={lockedMaxdFco2} co2Threshold={lockedCo2Threshold} />
         </div>
       )}
 
