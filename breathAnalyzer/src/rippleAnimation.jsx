@@ -13,19 +13,20 @@ export default function RippleParticles() {
   const canvasRef = useRef(null);
   const numParticles = 35;
   const co2Threshold = 8;
-  const timeElapsed = 5;
-
-  
-  
+  const timeElapsed = 3;
 
   let previousCo2 = 0;
   let prevFilteredCo2 = 0;
   let previousHumidity = 0;
   let dFilteredCo2 = 0;
-  let maxdFco2 = 0;
+  const maxdFco2Ref = useRef(0);
+  const [, forceUpdate] = useState(0); 
   let dHumidity = 0;
   let dCo2 = 0;
   let dPc0_5 = 0;
+
+  const [isActive, setIsActive] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
   const [showScroll, setShowScroll] = useState(false);
 
@@ -99,6 +100,10 @@ export default function RippleParticles() {
         dFilteredCo2 = co2AvgRef.current - prevFilteredCo2;
         //dPc0_5 = pcRef.current - previousPc0_5;
         dHumidity = humidRef.current - previousHumidity;
+        if (!showScroll && dFilteredCo2 > maxdFco2Ref.current && dFilteredCo2 < 20) {          
+          maxdFco2Ref.current = dFilteredCo2;
+          forceUpdate((x) => x + 1); // Triggers re-render
+        }
 
         this.targetRadius = 20;
         if (dFilteredCo2 >= co2Threshold) {
@@ -178,6 +183,8 @@ export default function RippleParticles() {
       ctx.font = "16px monospace";
       ctx.textAlign = "left";
 
+      
+
       // ctx.fillText(`CO2: ${co2Ref.current.toFixed(1)} ppm`, 10, 20);
       // // ctx.fillText(`Pressure: ${pressureRef.current.toFixed(1)} Pa`, 10, 40);
       // ctx.fillText(`Temp: ${tempRef.current.toFixed(1)} °C`, 10, 40);
@@ -186,7 +193,7 @@ export default function RippleParticles() {
       // ctx.fillText(`CO2Avg: ${co2AvgRef.current.toFixed(1)} ppm`, 10, 80);
       // ctx.fillText(`dCo2: ${dCo2.toFixed(1)}`, 10, 100);
       // // ctx.fillText(`dPc: ${dPc0_5.toFixed(1)}`, 10, 160);
-      // ctx.fillText(`dFCo2: ${dFilteredCo2.toFixed(1)}`, 10, 120);
+      ctx.fillText(`dFCo2: ${maxdFco2Ref.current.toFixed(1)}`, 10, 120);
 
       // Track elevated condition
       const now = Date.now();
@@ -265,9 +272,7 @@ export default function RippleParticles() {
       )}
 
       {showScroll && <ScrollList />}
-      {showScroll  && <PranaReading maxdFCo2 = {maxdFco2} co2Threshold = {co2Threshold} /> }
-
-      
+      {showScroll && <PranaReading maxdFCo2 = {maxdFco2Ref.current} co2Threshold = {co2Threshold} /> }
 
     </>
   );
