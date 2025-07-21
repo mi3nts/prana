@@ -8,21 +8,24 @@ export default function RippleParticles() {
   const humidRef = useRef(0);
   const tempRef = useRef(0);
   const canvasRef = useRef(null);
+  
+  // Move these to useRef to persist across re-renders
+  const previousCo2Ref = useRef(0);
+  const prevFilteredCo2Ref = useRef(0);
+  const previousHumidityRef = useRef(0);
+  const dFilteredCo2Ref = useRef(0);
+  const dHumidityRef = useRef(0);
+  const dCo2Ref = useRef(0);
+  
   const numParticles = 35;
   const co2Threshold = 8;
   const timeElapsed = 5;
-
-  let previousCo2 = 0;
-  let prevFilteredCo2 = 0;
-  let previousHumidity = 0;
-  let dFilteredCo2 = 0;
-  let dHumidity = 0;
-  let dCo2 = 0;
 
   const [showScroll, setShowScroll] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [maxdFco2, setMaxdFco2] = useState(0);
+  const maxdFco2Ref = useRef(0);
 
   // --- Countdown and spacebar activation ---
   useEffect(() => {
@@ -71,12 +74,14 @@ export default function RippleParticles() {
       const payload = typeof message === "string" ? JSON.parse(message) : message;
 
       if (topic === "d83add7316a5/COZIR001Test") {
-        if (!isActive) return;  // BLOCK updates until countdown finishes
-
-        previousCo2 = co2Ref.current;
-        prevFilteredCo2 = co2AvgRef.current;
-        previousHumidity = humidRef.current;
+        // Store previous values before updating
+        previousCo2Ref.current = co2Ref.current;
+        prevFilteredCo2Ref.current = co2AvgRef.current;
+        previousHumidityRef.current = humidRef.current;
+        
         setTimeout(sleep, 100);
+        
+        // Update current values
         co2Ref.current = payload.co2Latest ?? 0;
         co2AvgRef.current = payload.co2Filtered ?? 0;
         tempRef.current = payload.temperature ?? 0;
@@ -101,16 +106,18 @@ export default function RippleParticles() {
       }
 
       update() {
-        dCo2 = co2Ref.current - previousCo2;
-        dFilteredCo2 = co2AvgRef.current - prevFilteredCo2;
-        dHumidity = humidRef.current - previousHumidity;
+        // Calculate deltas using ref values
+        dCo2Ref.current = co2Ref.current - previousCo2Ref.current;
+        dFilteredCo2Ref.current = co2AvgRef.current - prevFilteredCo2Ref.current;
+        dHumidityRef.current = humidRef.current - previousHumidityRef.current;
 
-        if (dFilteredCo2 > maxdFco2 && dFilteredCo2 < 50) {
-          setMaxdFco2(dFilteredCo2);
+        if (dFilteredCo2Ref.current > maxdFco2Ref.current && dFilteredCo2Ref.current < 50) {
+          maxdFco2Ref.current = dFilteredCo2Ref.current;
+          setMaxdFco2(dFilteredCo2Ref.current);
         }
 
         this.targetRadius = 20;
-        if (dFilteredCo2 >= co2Threshold) {
+        if (dFilteredCo2Ref.current >= co2Threshold) {
           this.targetRadius = 50;
         }
 
@@ -185,10 +192,12 @@ export default function RippleParticles() {
       ctx.fillStyle = "white";
       ctx.font = "16px monospace";
       ctx.textAlign = "left";
-      ctx.fillText(`dFCo2: ${maxdFco2.toFixed(1)}`, 10, 120);
+      ctx.fillText(`prev: ${prevFilteredCo2Ref.current.toFixed(1)}`, 10, 80);
+      ctx.fillText(`curr: ${co2Ref.current.toFixed(1)}`, 10, 100);
+      ctx.fillText(`maxFCo2: ${maxdFco2Ref.current.toFixed(1)}`, 10, 120);
 
       const now = Date.now();
-      const isElevated = dFilteredCo2 >= co2Threshold;
+      const isElevated = dFilteredCo2Ref.current >= co2Threshold;
 
       if (isElevated) {
         if (!elevatedStartTime) elevatedStartTime = now;
@@ -198,7 +207,6 @@ export default function RippleParticles() {
         }
       } else {
         elevatedStartTime = null;
-        // if (showScroll) setShowScroll(false);
       }
 
       for (let i = 0; i < particles.length; i++) {
@@ -227,7 +235,7 @@ export default function RippleParticles() {
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [isActive, maxdFco2, showScroll]);
+  }, []); // Remove dependencies to prevent re-creation
 
   return (
     <>
@@ -283,7 +291,7 @@ export default function RippleParticles() {
 
       {showScroll && <ScrollList />}
       {showScroll && (
-        <PranaReading maxdFCo2={maxdFco2} co2Threshold={co2Threshold} />
+        <PranaReading maxdFCo2={maxdFco2Ref.current} co2Threshold={co2Threshold} />
       )}
     </>
   );
