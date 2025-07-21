@@ -26,6 +26,14 @@ export default function RippleParticles() {
   const [countdown, setCountdown] = useState(0);
   const [maxdFco2, setMaxdFco2] = useState(0);
   const maxdFco2Ref = useRef(0);
+  
+  // Add a ref to track isActive state inside the useEffect
+  const isActiveRef = useRef(false);
+  
+  // Update the ref whenever isActive changes
+  useEffect(() => {
+    isActiveRef.current = isActive;
+  }, [isActive]);
 
   // --- Countdown and spacebar activation ---
   useEffect(() => {
@@ -74,14 +82,17 @@ export default function RippleParticles() {
       const payload = typeof message === "string" ? JSON.parse(message) : message;
 
       if (topic === "d83add7316a5/COZIR001Test") {
-        // Store previous values before updating
-        previousCo2Ref.current = co2Ref.current;
-        prevFilteredCo2Ref.current = co2AvgRef.current;
-        previousHumidityRef.current = humidRef.current;
+        // Only process sensor data after timer goes off
+        if (isActiveRef.current) {
+          // Store previous values before updating current ones
+          previousCo2Ref.current = co2Ref.current;
+          prevFilteredCo2Ref.current = co2AvgRef.current;
+          previousHumidityRef.current = humidRef.current;
+          
+          setTimeout(sleep, 100);
+        }
         
-        setTimeout(sleep, 100);
-        
-        // Update current values
+        // Always update the current sensor readings (for display and calculations)
         co2Ref.current = payload.co2Latest ?? 0;
         co2AvgRef.current = payload.co2Filtered ?? 0;
         tempRef.current = payload.temperature ?? 0;
@@ -106,26 +117,32 @@ export default function RippleParticles() {
       }
 
       update() {
-        // Calculate deltas using ref values
-        dCo2Ref.current = co2Ref.current - previousCo2Ref.current;
-        dFilteredCo2Ref.current = co2AvgRef.current - prevFilteredCo2Ref.current;
-        dHumidityRef.current = humidRef.current - previousHumidityRef.current;
+        // Only calculate deltas and update particle behavior if active
+        if (isActiveRef.current) {
+          // Calculate deltas using ref values
+          dCo2Ref.current = co2Ref.current - previousCo2Ref.current;
+          dFilteredCo2Ref.current = co2AvgRef.current - prevFilteredCo2Ref.current;
+          dHumidityRef.current = humidRef.current - previousHumidityRef.current;
 
-        if (dFilteredCo2Ref.current > maxdFco2Ref.current && dFilteredCo2Ref.current < 50) {
-          maxdFco2Ref.current = dFilteredCo2Ref.current;
-          setMaxdFco2(dFilteredCo2Ref.current);
-        }
+          if (dFilteredCo2Ref.current > maxdFco2Ref.current && dFilteredCo2Ref.current < 50) {
+            maxdFco2Ref.current = dFilteredCo2Ref.current;
+            setMaxdFco2(dFilteredCo2Ref.current);
+          }
 
-        this.targetRadius = 20;
-        if (dFilteredCo2Ref.current >= co2Threshold) {
-          this.targetRadius = 50;
+          this.targetRadius = 20;
+          if (dFilteredCo2Ref.current >= co2Threshold) {
+            this.targetRadius = 50;
+          }
+        } else {
+          // When not active, keep particles at default state
+          this.targetRadius = 20;
         }
 
         const lerpSpeed = 0.01;
         this.radius += (this.targetRadius - this.radius) * lerpSpeed;
         this.radius = Math.min(this.radius, 40);
 
-        const speedMult = 0.5 + co2Ref.current / 100;
+        const speedMult = isActiveRef.current ? 0.5 + co2Ref.current / 100 : 0.5;
         this.x += this.vx * speedMult;
         this.y += this.vy * speedMult;
 
@@ -197,7 +214,7 @@ export default function RippleParticles() {
       ctx.fillText(`maxFCo2: ${maxdFco2Ref.current.toFixed(1)}`, 10, 120);
 
       const now = Date.now();
-      const isElevated = dFilteredCo2Ref.current >= co2Threshold;
+      const isElevated = isActiveRef.current && dFilteredCo2Ref.current >= co2Threshold;
 
       if (isElevated) {
         if (!elevatedStartTime) elevatedStartTime = now;
