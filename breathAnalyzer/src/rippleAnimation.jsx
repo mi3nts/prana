@@ -19,9 +19,11 @@ export default function RippleParticles() {
   
   const numParticles = 35;
   const co2Threshold = 8;
-  const timeElapsed = 5;
+  const timeElapsed = 6;
 
   const [showScroll, setShowScroll] = useState(false);
+  const [showBlur, setShowBlur] = useState(false);
+  const [showPranaReading, setShowPranaReading] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [countdown, setCountdown] = useState(0);
   const [maxdFco2, setMaxdFco2] = useState(0);
@@ -54,6 +56,19 @@ export default function RippleParticles() {
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isActive, countdown]);
+
+  // Add useEffect to handle PranaReading fade in after showScroll appears
+  useEffect(() => {
+    if (showScroll) {
+      const timer = setTimeout(() => {
+        setShowPranaReading(true);
+      }, timeElapsed * 1000); // Convert seconds to milliseconds
+
+      return () => clearTimeout(timer);
+    } else {
+      setShowPranaReading(false);
+    }
+  }, [showScroll, timeElapsed]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -200,7 +215,7 @@ export default function RippleParticles() {
     }
 
     const particles = Array.from({ length: numParticles }, () => new Particle());
-    let elevatedStartTime = null;
+    let activeStartTime = null;
 
     const animate = () => {
       ctx.fillStyle = "rgba(65, 170, 245, 1)";
@@ -214,16 +229,26 @@ export default function RippleParticles() {
       ctx.fillText(`maxFCo2: ${maxdFco2Ref.current.toFixed(1)}`, 10, 120);
 
       const now = Date.now();
-      const isElevated = isActiveRef.current && dFilteredCo2Ref.current >= co2Threshold;
 
-      if (isElevated) {
-        if (!elevatedStartTime) elevatedStartTime = now;
-        const elapsed = (now - elevatedStartTime) / 1000;
+      // Set activeStartTime when isActive becomes true
+      if (isActiveRef.current && !activeStartTime) {
+        activeStartTime = now;
+      }
+
+      // Show blur 1 second before scroll appears
+      if (isActiveRef.current && activeStartTime) {
+        const elapsed = (now - activeStartTime) / 1000;
+        if (elapsed >= timeElapsed - 1 && !showBlur) {
+          setShowBlur(true);
+        }
         if (elapsed >= timeElapsed && !showScroll) {
           setShowScroll(true);
         }
-      } else {
-        elevatedStartTime = null;
+      }
+
+      // Reset timing when not active
+      if (!isActiveRef.current) {
+        activeStartTime = null;
       }
 
       for (let i = 0; i < particles.length; i++) {
@@ -289,7 +314,7 @@ export default function RippleParticles() {
         </div>
       )}
 
-      {showScroll && (
+      {showBlur && (
         <div
           style={{
             position: "fixed",
@@ -302,14 +327,48 @@ export default function RippleParticles() {
             backgroundColor: "rgba(0, 0, 0, 0.4)",
             zIndex: 1000,
             pointerEvents: "none",
+            animation: "blurFadeIn 1s ease-in-out",
           }}
         />
       )}
 
       {showScroll && <ScrollList />}
-      {showScroll && (
-        <PranaReading maxdFCo2={maxdFco2Ref.current} co2Threshold={co2Threshold} />
+      
+      {showPranaReading && (
+        <div
+          style={{
+            animation: "fadeIn 1s ease-in-out",
+          }}
+        >
+          <PranaReading maxdFCo2={maxdFco2Ref.current} co2Threshold={co2Threshold} />
+        </div>
       )}
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        @keyframes blurFadeIn {
+          from {
+            opacity: 0;
+            backdropFilter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+          }
+          to {
+            opacity: 1;
+            backdropFilter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+          }
+        }
+      `}</style>
     </>
   );
 }

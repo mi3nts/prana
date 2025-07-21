@@ -40,7 +40,24 @@ export default function PranaReading({ maxdFCo2, co2Threshold }) {
   return (
     <>
       {pranaIndex !== null && (
-        <div>
+        <div style={{
+        position: "fixed",
+        bottom: "10%",
+        left: "50%",
+        transform: "translateX(-50%)",
+        backgroundColor: "rgba(0, 0, 0, 0.4)",
+        color: "white",
+        padding: "2rem",
+        borderRadius: "12px",
+        maxWidth: "600px",
+        width: "90%",
+        textAlign: "center",
+        zIndex: 10000,
+        pointerEvents: "none",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        border: "1px solid rgba(255, 255, 255, 0.1)"
+      }}>
           <h1>{pranaArray[pranaIndex]}</h1>
           <p>{pranaDesc[pranaIndex]}</p>
         </div>

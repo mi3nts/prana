@@ -104,12 +104,13 @@ export default function ScrollList() {
   return (
       <div style={{
           position: "fixed",
-          top: "50vh",
-          left: "50vw",
-          width: "100vw",
-          height: "100vh",
-          zIndex: 9999,
-          pointerEvents: "none",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",  // center the icon
+        width: "400px",  
+        height: "200px", 
+        zIndex: 9999,
+        pointerEvents: "none",
       }}>
       <svg width="100%" height="100%">
         <defs>
@@ -120,7 +121,7 @@ export default function ScrollList() {
               <stop stopColor="white" stopOpacity="1" offset="70%" />
               <stop stopColor="white" stopOpacity="0" offset="100%" />
             </linearGradient>
-            <rect width="20%" height="20%" fill="url(#linearGradient)" />
+            <rect width="100%" height="100%" fill="url(#linearGradient)" />
           </mask>
         </defs>
         <g style={{ mask: "url(#mask)" }}>
