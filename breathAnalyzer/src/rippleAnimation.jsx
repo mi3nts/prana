@@ -1,5 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import ScrollList from "./components/listScroll";
+import PranaReading from "./components/pranaReading";
+//import PranaReading from "./components/pranaReading";
 
 export default function RippleParticles() {
   const co2Ref = useRef(0);
@@ -13,10 +15,14 @@ export default function RippleParticles() {
   const co2Threshold = 8;
   const timeElapsed = 5;
 
+  
+  
+
   let previousCo2 = 0;
   let prevFilteredCo2 = 0;
   let previousHumidity = 0;
   let dFilteredCo2 = 0;
+  let maxdFco2 = 0;
   let dHumidity = 0;
   let dCo2 = 0;
   let dPc0_5 = 0;
@@ -95,7 +101,7 @@ export default function RippleParticles() {
         dHumidity = humidRef.current - previousHumidity;
 
         this.targetRadius = 20;
-        if (dFilteredCo2 >= 8) {
+        if (dFilteredCo2 >= co2Threshold) {
           this.targetRadius = 50;
         }
 
@@ -259,6 +265,12 @@ export default function RippleParticles() {
       )}
 
       {showScroll && <ScrollList />}
+      {showScroll  && <PranaReading maxdFCo2 = {maxdFco2} co2Threshold = {co2Threshold} /> }
+
+      
+
     </>
   );
 }
+
+
