@@ -30,3 +30,9 @@ Further technical details for each Sensor can be found in the readme below
 
 
 most of the parts you care about are in App.jsx, server.py, mqttSubscriber.py
+
+## To run:
+**python3 firmware/mqttWebsocket.py**
+in breathAnalyzer, do **npm run dev**
+
+this will open the website at localhost:5173
