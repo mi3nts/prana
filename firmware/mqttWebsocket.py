@@ -4,14 +4,20 @@ import json
 from paho.mqtt.client import Client as MQTTClient
 import logging
 import threading
+from mintsXU4 import mintsDefinitions as mD
+import collections
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # -- MQTT Configuration --
-MQTT_BROKER = "mqtt.circ.utdallas.edu"
-MQTT_PORT = 8883
+MQTT_BROKER = mD.mqttBrokerDC
+MQTT_PORT = mD.mqttPort
+credentials = mD.credentials
+UN = credentials['mqtt']['username']
+PW = credentials['mqtt']['password']
+decoder = json.JSONDecoder(object_pairs_hook=collections.OrderedDict)
 
 # -- WebSocket Configuration --
 WEBSOCKET_HOST = "localhost"
@@ -87,7 +93,7 @@ def on_message(client, userdata, msg):
 # -- Start MQTT Client --
 def start_mqtt():
     client = MQTTClient()
-    client.username_pw_set("mintstest", "eryeNYj9Aj")
+    client.username_pw_set(UN, PW)
     client.tls_set()
     client.tls_insecure_set(True)
     client.on_connect = on_connect
