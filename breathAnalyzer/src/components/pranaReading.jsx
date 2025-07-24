@@ -6,7 +6,6 @@ const pranaArray = [
   "Disciplined Pulse",
   "Conditioned Flow",
   "Dormant Vitality",
-  "please try again"
 ];
 
 const pranaDesc = [
@@ -15,7 +14,6 @@ const pranaDesc = [
   "Structured like your project timeline—steady but uninspired. Prāṇa conforms to code... until debug mode is triggered.",
   "Measured and polite, this breath knows how to RSVP. Prāṇa adapts. Efficient. Predictable. Engineer-approved.",
   "Barely there, this breath stays hidden. Prāṇa is introverted today—maybe it skipped breakfast?",
-  "Maybe blow harder?"
 ];
 
 export default function PranaReading({ maxdFCo2, co2Threshold }) {
@@ -30,10 +28,8 @@ export default function PranaReading({ maxdFCo2, co2Threshold }) {
       setPranaIndex(2);
     } else if (maxdFCo2 > co2Threshold + 3) {
       setPranaIndex(3);
-    } else if (maxdFCo2 > co2Threshold) {
-      setPranaIndex(4);
     } else {
-      setPranaIndex(5);
+      setPranaIndex(4);
     }
   }, [maxdFCo2, co2Threshold]);
 
