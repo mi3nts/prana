@@ -11,6 +11,7 @@ import collections
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 # -- MQTT Configuration --
 MQTT_BROKER = mD.mqttBrokerDC
 MQTT_PORT = mD.mqttPort
