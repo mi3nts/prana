@@ -7,7 +7,7 @@ MAX_DFC02=$1
 CO2_THRESHOLD=$2
 
 # Printer device (adjust path as needed)
-PRINTER_DEVICE="/dev/ttyUSB0"  # or /dev/ttyACM0, check with 'ls /dev/tty*'
+PRINTER_DEVICE="/dev/usb/lp0"  # or /dev/ttyACM0, check with 'ls /dev/tty*'
 
 # ESC/POS Commands
 ESC="\x1B"
