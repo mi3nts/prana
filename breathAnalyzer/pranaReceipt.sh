@@ -9,39 +9,20 @@ CO2_THRESHOLD=$2
 # Printer device (adjust path as needed)
 PRINTER_DEVICE="/dev/usb/lp0"  # or /dev/ttyACM0, check with 'ls /dev/tty*'
 
-# ESC/POS Commands
-ESC="\x1B"
-GS="\x1D"
-
-# Initialize printer
-printf "${ESC}@" > $PRINTER_DEVICE
-
-# Center align
-printf "${ESC}a\x01" > $PRINTER_DEVICE
-
-# Large text for header
-printf "${ESC}!\x30" > $PRINTER_DEVICE
-printf "PRANA READING\n" > $PRINTER_DEVICE
-
-# Normal text
-printf "${ESC}!\x00" > $PRINTER_DEVICE
-printf "\n" > $PRINTER_DEVICE
-
-# Left align for data
-printf "${ESC}a\x00" > $PRINTER_DEVICE
-
-# Print the data
-printf "Max CO2 Change: ${MAX_DFC02}\n" > $PRINTER_DEVICE
-printf "CO2 Threshold: ${CO2_THRESHOLD}\n" > $PRINTER_DEVICE
-printf "\n" > $PRINTER_DEVICE
-
-# Add timestamp
-printf "Time: $(date '+%Y-%m-%d %H:%M:%S')\n" > $PRINTER_DEVICE
-
-# Cut paper (if supported)
-printf "${GS}V\x41\x03" > $PRINTER_DEVICE
-
-# Feed and cut
-printf "\n\n\n" > $PRINTER_DEVICE
+{
+    echo -e "\x1B@"                    # Initialize
+    echo -e "\x1Ba\x01"               # Center align
+    echo -e "\x1B!\x30"               # Large text
+    echo "PRANA READING"
+    echo -e "\x1B!\x00"               # Normal text
+    echo ""
+    echo -e "\x1Ba\x00"               # Left align
+    echo "Max CO2 Change: ${MAX_DFC02}"
+    echo "CO2 Threshold: ${CO2_THRESHOLD}"
+    echo ""
+    echo "Time: $(date '+%Y-%m-%d %H:%M:%S')"
+    echo -e "\x1DV\x41\x03"           # Cut paper
+    echo -e "\n\n\n"
+} > $PRINTER_DEVICE
 
 echo "Receipt printed successfully"
