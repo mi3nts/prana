@@ -8,6 +8,9 @@ export default function RippleParticles() {
   const humidRef = useRef(0);
   const tempRef = useRef(0);
   const canvasRef = useRef(null);
+
+  const activationTimeRef = useRef(0)
+  const stabilizationPeriod = 2000;
   
   const previousCo2Ref = useRef(0);
   const prevFilteredCo2Ref = useRef(0);
@@ -64,7 +67,10 @@ export default function RippleParticles() {
           //start the countdown
           setCountdown(3);
           setMode('countdown');
-          setIsActive(true);
+          activationTimeRef.current = 0;
+          dFilteredCo2Ref.current = 0;
+          dCo2Ref.current = 0;
+          dHumidityRef.current = 0;
         } else if (mode === 'overlay'){
           //reset everything
           setMode('idle');
@@ -75,12 +81,13 @@ export default function RippleParticles() {
           setShowBlur(false);
           setMaxdFco2(0);
           maxdFco2Ref.current = 0;
+          activationTimeRef.current = 0;
         };
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isActive, countdown]);
+  }, [mode]);
 
   useEffect(() => {
     if (showScroll) {
@@ -127,9 +134,20 @@ export default function RippleParticles() {
 
       if (topic === "d83add7316a5/COZIR001Test") {
         if (isActiveRef.current) {
+          
+          if (activationTimeRef.current === 0){
+            activationTimeRef.current = Date.now();
+            previousCo2Ref.current = payload.co2Latest ?? 0;
+            prevFilteredCo2Ref.current = payload.co2Filtered ?? 0;
+            previousHumidityRef.current = payload.humidity ?? 0;
+          }
+          const timeSinceActivation = Date.now() - activationTimeRef.current;
+
+          if(timeSinceActivation > stabilizationPeriod){
           previousCo2Ref.current = co2Ref.current;
           prevFilteredCo2Ref.current = co2AvgRef.current;
           previousHumidityRef.current = humidRef.current;
+          }
           
           setTimeout(sleep, 100);
         }
@@ -155,13 +173,19 @@ export default function RippleParticles() {
         this.targetRadius = 20;
         this.mass = 4;
         this.color = "#FFFFFF";
+        this.gravity = 0.3;
+        this.damping = .98;
       }
 
       update() {
         if (isActiveRef.current) {
+          const timeSinceActivation = Date.now()- activationTimeRef.current;
+
+          if(timeSinceActivation > stabilizationPeriod){
           dCo2Ref.current = co2Ref.current - previousCo2Ref.current;
           dFilteredCo2Ref.current = co2AvgRef.current - prevFilteredCo2Ref.current;
           dHumidityRef.current = humidRef.current - previousHumidityRef.current;
+          }
 
           if (dFilteredCo2Ref.current > maxdFco2Ref.current && dFilteredCo2Ref.current < 50) {
             maxdFco2Ref.current = dFilteredCo2Ref.current;
@@ -170,22 +194,44 @@ export default function RippleParticles() {
 
           this.targetRadius = 20;
           if (dFilteredCo2Ref.current >= co2Threshold) {
-            this.targetRadius = 50;
+            this.targetRadius = 35;
+            this.vx += (Math.random() - 0.5) * 3;
+            this.vy += (Math.random() - 0.5) * -4;
           }
         } else {
           this.targetRadius = 20;
+          activationTimeRef.current = 0; //reset activation timer
         }
+
+        this.vy += this.gravity;
+        this.vx *= this.damping;
+        this.vy *= this.damping;
 
         const lerpSpeed = 0.01;
         this.radius += (this.targetRadius - this.radius) * lerpSpeed;
         this.radius = Math.min(this.radius, 40);
 
-        const speedMult = isActiveRef.current ? 0.5 + co2Ref.current / 100 : 0.5;
+        const speedMult = isActiveRef.current ? 0.3 + co2Ref.current / 200 : 0.3;
         this.x += this.vx * speedMult;
         this.y += this.vy * speedMult;
 
-        if (this.x <= 0 + this.radius || this.x >= width - this.radius) this.vx *= -1;
-        if (this.y <= 0 + this.radius || this.y >= height - this.radius) this.vy *= -1;
+        if (this.x <= this.radius) {
+          this.x = this.radius
+          this.vx *= -0.7;
+        }
+        if (this.x >= width - this.radius){
+          this.x = width - this.radius
+          this.vx *= -0.7
+        }
+        if (this.y <= this.radius){
+          this.y = this.radius;
+          this.vy *= -0.6;
+        }
+        if (this.y >= height - this.radius){
+          this.y = height - this.radius;
+          this.vy *= -0.6
+          this.vx += (Math.random() - 0.5) * 0.5;
+        }
       }
 
       draw() {
