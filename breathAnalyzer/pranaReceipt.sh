@@ -10,7 +10,7 @@ CO2_THRESHOLD=$2
 PRINTER_DEVICE="/dev/usb/lp0"  # or /dev/ttyACM0, check with 'ls /dev/tty*'
 
 {
-    echo -e '\n\n\n\n'
+    echo -e '\n\n\n'
     echo -e "\x1B@"                    # Initialize
     echo -e "\x1Ba\x01"               # Center align
     echo -e "\x1B!\x30"               # Large text
