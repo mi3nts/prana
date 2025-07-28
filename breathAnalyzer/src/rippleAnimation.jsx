@@ -1,6 +1,27 @@
 import { useRef, useEffect, useState } from "react";
-import ScrollList from "./components/listScroll";
 import PranaReading from "./components/pranaReading";
+
+function LoadingAnimation(){
+  return(
+    <div style = {{textAlign: "center", color: 'white'}}>
+      <div
+      style = {{
+      width: '60px',
+      height: '60px',
+      border: '4px solid rgba(255, 255, 255, 0.3)',
+      borderTop: '4px solid white',
+      borderRadius: '50%',
+      animation: 'spin 1s linear infinite',
+      margin: '0 auto 20px auto',
+      }}
+    />
+      <div style = {{fontSize: '18px', fontWeight: 'bold'}}>
+        Analyzing Breath...
+      </div>
+    </div>
+  );
+}
+
 
 export default function RippleParticles() {
   const co2Ref = useRef(0);
@@ -23,7 +44,7 @@ export default function RippleParticles() {
   const co2Threshold = 8;
   const timeElapsed = 6;
 
-  const [showScroll, setShowScroll] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
   const [showBlur, setShowBlur] = useState(false);
   const [showPranaReading, setShowPranaReading] = useState(false);
   const [isActive, setIsActive] = useState(false);
@@ -35,7 +56,7 @@ export default function RippleParticles() {
   const maxdFco2Ref = useRef(0);
   
   const isActiveRef = useRef(false);
-  
+
   useEffect(() => {
     isActiveRef.current = isActive;
   }, [isActive]);
@@ -77,7 +98,7 @@ export default function RippleParticles() {
           setCountdown(3);
           setIsActive(false);
           setShowPranaReading(false);
-          setShowScroll(false);
+          setShowLoading(false);
           setShowBlur(false);
           setMaxdFco2(0);
           maxdFco2Ref.current = 0;
@@ -90,7 +111,7 @@ export default function RippleParticles() {
   }, [mode]);
 
   useEffect(() => {
-    if (showScroll) {
+    if (showLoading) {
       const timer = setTimeout(() => {
         // Lock the data when PranaReading becomes visible
         setLockedMaxdFco2(maxdFco2Ref.current);
@@ -98,13 +119,12 @@ export default function RippleParticles() {
         setShowPranaReading(true);
         setMode('overlay');
         setIsActive(false);
+        setShowLoading(false)
       }, (timeElapsed + 1) * 1000); 
 
       return () => clearTimeout(timer);
-    } else {
-      setShowPranaReading(false);
-    }
-  }, [showScroll, timeElapsed]);
+    } 
+  }, [showLoading, timeElapsed]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -308,8 +328,8 @@ export default function RippleParticles() {
         if (elapsed >= timeElapsed - 1 && !showBlur) {
           setShowBlur(true);
         }
-        if (elapsed >= timeElapsed && !showScroll) {
-          setShowScroll(true);
+        if (elapsed >= timeElapsed && !showLoading) {
+          setShowLoading(true);
         }
       }
 
@@ -399,7 +419,20 @@ export default function RippleParticles() {
         />
       )}
 
-      {showScroll && <ScrollList />}
+      {showLoading && (
+        <div
+          style = {{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 2000,
+            animation: showPranaReading ? 'fadeOut 0.5s ease-in-out' : 'fadeIn 1s ease-in-out',
+          }}
+        >
+            <LoadingAnimation/>
+        </div>
+      )}
       
       {showPranaReading && (
         <div
@@ -412,30 +445,41 @@ export default function RippleParticles() {
       )}
 
       <style jsx>{`
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        
-        @keyframes blurFadeIn {
-          from {
-            opacity: 0;
-            backdropFilter: blur(0px);
-            -webkit-backdrop-filter: blur(0px);
-          }
-          to {
-            opacity: 1;
-            backdropFilter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-          }
-        }
-      `}</style>
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+    @keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+  
+  @keyframes blurFadeIn {
+    from {
+      opacity: 0;
+      backdropFilter: blur(0px);
+      -webkit-backdrop-filter: blur(0px);
+    }
+    to {
+      opacity: 1;
+      backdropFilter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+`}</style>
     </>
   );
 }
