@@ -25,6 +25,7 @@ export default function RippleParticles() {
   const [showPranaReading, setShowPranaReading] = useState(false);
   const [isActive, setIsActive] = useState(false);
   const [countdown, setCountdown] = useState(0);
+  const [mode, setMode] = useState('idle');
   const [maxdFco2, setMaxdFco2] = useState(0);
   const [lockedMaxdFco2, setLockedMaxdFco2] = useState(0);
   const [lockedCo2Threshold, setLockedCo2Threshold] = useState(co2Threshold);
@@ -36,20 +37,45 @@ export default function RippleParticles() {
     isActiveRef.current = isActive;
   }, [isActive]);
 
+  useEffect(() => {
+    if (mode !== 'countdown') return;
+  
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === 1) {
+          clearInterval(timer);
+          setIsActive(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  
+    return () => clearInterval(timer);
+  }, [mode]);
+
   // handle pressing space bar and starting timer
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.code === "Space" && !isActive && countdown === 0) {
-        let t = 3;
-        setCountdown(t);
-        const interval = setInterval(() => {
-          t -= 1;
-          setCountdown(t);
-          if (t <= 0) {
-            clearInterval(interval);
-            setIsActive(true);
-          }
-        }, 1000);
+      if (e.code === "Space") {
+        e.preventDefault();
+
+        if(mode === 'idle'){
+          //start the countdown
+          setCountdown(3);
+          setMode('countdown');
+          setIsActive(true);
+        } else if (mode === 'overlay'){
+          //reset everything
+          setMode('idle');
+          setCountdown(3);
+          setIsActive(false);
+          setShowPranaReading(false);
+          setShowScroll(false);
+          setShowBlur(false);
+          setMaxdFco2(0);
+          maxdFco2Ref.current = 0;
+        };
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -63,6 +89,8 @@ export default function RippleParticles() {
         setLockedMaxdFco2(maxdFco2Ref.current);
         setLockedCo2Threshold(co2Threshold);
         setShowPranaReading(true);
+        setMode('overlay');
+        setIsActive(false);
       }, (timeElapsed + 1) * 1000); 
 
       return () => clearTimeout(timer);
@@ -288,7 +316,7 @@ export default function RippleParticles() {
         />
       </div>
 
-      {!isActive && countdown > 0 && (
+      {mode === 'countdown' && countdown > 0 && (
         <div
           style={{
             position: "fixed",
