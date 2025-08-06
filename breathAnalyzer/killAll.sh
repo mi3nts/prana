@@ -25,12 +25,12 @@ fi
 sleep 1
 
 # Kill npm run dev (port 5174)
-dev_pid=$(lsof -ti :5174)
+dev_pid=$(lsof -ti :5173)
 if [ -n "$dev_pid" ]; then
-    echo "Killing dev server on port 5174 (PID: $dev_pid)"
+    echo "Killing dev server on port 5173 (PID: $dev_pid)"
     kill -9 $dev_pid
 else
-    echo "No process found on port 5174 (npm run dev)"
+    echo "No process found on port 5173 (npm run dev)"
 fi
 
 echo "Done."

@@ -11,7 +11,6 @@ import collections
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-
 MQTT_BROKER = mD.mqttBrokerDC
 MQTT_PORT = mD.mqttPort
 credentials = mD.credentials
@@ -30,10 +29,17 @@ main_loop = None
 async def run_prana_service(data=None):
     """Run the prana-script.service using systemctl"""
     try:
-        logger.info("Starting prana-script.service...")
+        # Extract data from the payload
+        if data is None:
+            data = {}
+        
+        max_co2 = str(data.get('maxCo2', '0'))
+        prana_index = str(data.get('pranaIndex', '0'))
+        
+        logger.info(f"Starting prana-script.service with maxCo2={max_co2}, pranaIndex={prana_index}")
         
         result = subprocess.run(
-            ['sudo', '/usr/local/bin/prana-wrapper.sh', maxCo2, pranaIndex],
+            ['sudo', '/usr/local/bin/prana-wrapper.sh', max_co2, prana_index],
             capture_output=True,
             text=True,
             timeout=30
@@ -41,6 +47,7 @@ async def run_prana_service(data=None):
         
         if result.returncode == 0:
             logger.info("prana-script.service started successfully")
+            logger.info(f"Script output: {result.stdout}")
             return {
                 'success': True,
                 'message': 'prana-script.service started successfully',

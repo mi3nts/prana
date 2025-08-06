@@ -16,23 +16,7 @@ const pranaDesc = [
   "Barely there, this breath stays hidden. Prāṇa is introverted today—maybe it skipped breakfast?",
 ];
 
-export default function PranaReading({ maxdFCo2, co2Threshold }) {
-  const [pranaIndex, setPranaIndex] = useState(null);
-
-  useEffect(() => {
-    if (maxdFCo2 > co2Threshold + 15) {
-      setPranaIndex(0);
-    } else if (maxdFCo2 > co2Threshold + 11) {
-      setPranaIndex(1);
-    } else if (maxdFCo2 > co2Threshold + 7) {
-      setPranaIndex(2);
-    } else if (maxdFCo2 > co2Threshold + 3) {
-      setPranaIndex(3);
-    } else {
-      setPranaIndex(4);
-    }
-  }, [maxdFCo2, co2Threshold]);
-
+export default function PranaReading({pranaIndex}){
   return (
     <>
       {pranaIndex !== null && (

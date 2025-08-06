@@ -55,7 +55,7 @@ export default function RippleParticles() {
   const [maxdFco2, setMaxdFco2] = useState(0);
   const [lockedMaxdFco2, setLockedMaxdFco2] = useState(0);
   const [lockedCo2Threshold, setLockedCo2Threshold] = useState(co2Threshold);
-  const [ambientCo2, setAmbientCo2] = useState(null);
+  const ambientCo2Ref = useRef(null);
   const maxdFco2Ref = useRef(0);
   
   const isActiveRef = useRef(false);
@@ -96,7 +96,7 @@ export default function RippleParticles() {
           dFilteredCo2Ref.current = 0;
           dCo2Ref.current = 0;
           dHumidityRef.current = 0;
-          setAmbientCo2(co2AvgRef.current);
+          ambientCo2Ref.current=co2AvgRef.current;
         } else if (mode === 'overlay'){
           //reset everything
           setMode('idle');
@@ -107,7 +107,7 @@ export default function RippleParticles() {
           setShowLoading(false);
           setShowBlur(false);
           setMaxdFco2(0);
-          setAmbientCo2(null);
+          ambientCo2Ref.current = null;
           maxdFco2Ref.current = 0;
           activationTimeRef.current = 0;
         };
@@ -118,18 +118,18 @@ export default function RippleParticles() {
   }, [mode]);
 
   useEffect(() => {
-    if (maxdFCo2 > co2Threshold + 15) {
+    if (maxdFco2 > co2Threshold + 15) {
       setPranaIndex(0);
-    } else if (maxdFCo2 > co2Threshold + 11) {
+    } else if (maxdFco2 > co2Threshold + 11) {
       setPranaIndex(1);
-    } else if (maxdFCo2 > co2Threshold + 7) {
+    } else if (maxdFco2 > co2Threshold + 7) {
       setPranaIndex(2);
-    } else if (maxdFCo2 > co2Threshold + 3) {
+    } else if (maxdFco2 > co2Threshold + 3) {
       setPranaIndex(3);
     } else {
       setPranaIndex(4);
     }
-  }, [maxCo2, co2Threshold]);
+  }, [maxdFco2, co2Threshold]);
 
   useEffect(() => {
     if (showLoading) {
@@ -344,8 +344,8 @@ export default function RippleParticles() {
       ctx.textAlign = "left";
       let textY = 20
 
-      if (ambientCo2 !== null) {
-        ctx.fillText(`Initial CO2: ${ambientCo2} ppm`, 10, 20);
+      if (ambientCo2Ref.current !== null) {
+        ctx.fillText(`Initial CO2: ${ambientCo2Ref.current} ppm`, 10, 20);
         ctx.fillText(`Current CO2: ${co2AvgRef.current} ppm`, 10, 40)
       }
       else {
@@ -495,7 +495,7 @@ export default function RippleParticles() {
             animation: "fadeIn 1s ease-in-out",
           }}
         >
-          <PranaReading maxdFCo2={lockedMaxdFco2} co2Threshold={lockedCo2Threshold} />
+          <PranaReading pranaIndex={pranaIndex} />
         </div>
       )}
       {mode === 'idle' && (
