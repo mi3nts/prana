@@ -32,9 +32,8 @@ async def run_prana_service(data=None):
     try:
         logger.info("Starting prana-script.service...")
         
-        # Run systemctl start command
         result = subprocess.run(
-            ['sudo', 'systemctl', 'start', 'prana-script.service'],
+            ['sudo', '/usr/local/bin/prana-wrapper.sh', maxCo2, pranaIndex],
             capture_output=True,
             text=True,
             timeout=30

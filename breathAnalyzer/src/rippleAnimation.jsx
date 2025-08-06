@@ -39,11 +39,13 @@ export default function RippleParticles() {
   const dFilteredCo2Ref = useRef(0);
   const dHumidityRef = useRef(0);
   const dCo2Ref = useRef(0);
+  const [maxCo2, setMaxCo2] = useState(0);
   
   const numParticles = 20;
   const co2Threshold = 8;
   const timeElapsed = 6;
 
+  const [pranaIndex, setPranaIndex] = useState(0);  //default 0, but should change between 0-4
   const [showLoading, setShowLoading] = useState(false);
   const [showBlur, setShowBlur] = useState(false);
   const [showPranaReading, setShowPranaReading] = useState(false);
@@ -56,9 +58,8 @@ export default function RippleParticles() {
   const [ambientCo2, setAmbientCo2] = useState(null);
   const maxdFco2Ref = useRef(0);
   
-  
   const isActiveRef = useRef(false);
-  const wsRef = useRef(null);  // Store WebSocket here for use outside other hooks
+  const wsRef = useRef(null);  
 
   useEffect(() => {
     isActiveRef.current = isActive;
@@ -95,11 +96,12 @@ export default function RippleParticles() {
           dFilteredCo2Ref.current = 0;
           dCo2Ref.current = 0;
           dHumidityRef.current = 0;
-          setAmbientCo2(co2Ref.current);
+          setAmbientCo2(co2AvgRef.current);
         } else if (mode === 'overlay'){
           //reset everything
           setMode('idle');
           setCountdown(3);
+          setMaxCo2(0)
           setIsActive(false);
           setShowPranaReading(false);
           setShowLoading(false);
@@ -116,14 +118,27 @@ export default function RippleParticles() {
   }, [mode]);
 
   useEffect(() => {
+    if (maxdFCo2 > co2Threshold + 15) {
+      setPranaIndex(0);
+    } else if (maxdFCo2 > co2Threshold + 11) {
+      setPranaIndex(1);
+    } else if (maxdFCo2 > co2Threshold + 7) {
+      setPranaIndex(2);
+    } else if (maxdFCo2 > co2Threshold + 3) {
+      setPranaIndex(3);
+    } else {
+      setPranaIndex(4);
+    }
+  }, [maxCo2, co2Threshold]);
+
+  useEffect(() => {
     if (showLoading) {
-      // Send run-script command to existing WebSocket when loading starts
       if(wsRef.current && wsRef.current.readyState === WebSocket.OPEN){
         wsRef.current.send(JSON.stringify({ action: 'run-script' }));
       }
 
       const timer = setTimeout(() => {
-        // Lock the data when PranaReading becomes visible
+        // lock data when PranaReading becomes visible
         setLockedMaxdFco2(maxdFco2Ref.current);
         setLockedCo2Threshold(co2Threshold);
         setShowPranaReading(true);
@@ -149,7 +164,7 @@ export default function RippleParticles() {
     window.addEventListener("resize", handleResize);
 
     const ws = new WebSocket("ws://localhost:8765");
-    wsRef.current = ws; // Save websocket ref for use elsewhere
+    wsRef.current = ws; 
 
     ws.onopen = () => {
       console.log("WebSocket connected");
@@ -215,6 +230,10 @@ export default function RippleParticles() {
             dCo2Ref.current = co2Ref.current - previousCo2Ref.current;
             dFilteredCo2Ref.current = co2AvgRef.current - prevFilteredCo2Ref.current;
             dHumidityRef.current = humidRef.current - previousHumidityRef.current;
+          }
+
+          if (co2AvgRef.current > maxCo2) {
+            setMaxCo2(co2AvgRef.current);
           }
 
           if (dFilteredCo2Ref.current > maxdFco2Ref.current && dFilteredCo2Ref.current < 50) {
@@ -390,8 +409,8 @@ export default function RippleParticles() {
         const message = {
           action: 'run-prana-script',
           data: {
-            maxdFco2: lockedMaxdFco2,
-            co2Threshold: lockedCo2Threshold
+            maxCo2: maxCo2,
+            pranaIndex: pranaIndex
           }
         };
         
