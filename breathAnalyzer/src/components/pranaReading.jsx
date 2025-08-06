@@ -50,8 +50,6 @@ export default function PranaReading({ maxdFCo2, co2Threshold }) {
         textAlign: "center",
         zIndex: 10000,
         pointerEvents: "none",
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
         border: "1px solid rgba(255, 255, 255, 0.1)"
       }}>
           <h1>{pranaArray[pranaIndex]}</h1>

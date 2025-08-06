@@ -4,6 +4,7 @@ import json
 from paho.mqtt.client import Client as MQTTClient
 import logging
 import threading
+import subprocess
 from mintsXU4 import mintsDefinitions as mD
 import collections
 
@@ -28,6 +29,102 @@ WEBSOCKET_PORT = 8765
 connected_clients = set()
 message_queue = asyncio.Queue()
 main_loop = None
+
+# -- Function to run systemd service --
+async def run_prana_service(data=None):
+    """Run the prana-script.service using systemctl"""
+    try:
+        logger.info("Starting prana-script.service...")
+        
+        # Run systemctl start command
+        result = subprocess.run(
+            ['sudo', 'systemctl', 'start', 'prana-script.service'],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
+        if result.returncode == 0:
+            logger.info("prana-script.service started successfully")
+            return {
+                'success': True,
+                'message': 'prana-script.service started successfully',
+                'output': result.stdout
+            }
+        else:
+            logger.error(f"Failed to start prana-script.service: {result.stderr}")
+            return {
+                'success': False,
+                'message': 'Failed to start prana-script.service',
+                'error': result.stderr
+            }
+            
+    except subprocess.TimeoutExpired:
+        logger.error("prana-script.service start command timed out")
+        return {
+            'success': False,
+            'message': 'Service start command timed out',
+            'error': 'Command execution exceeded 30 seconds'
+        }
+    except Exception as e:
+        logger.error(f"Error starting prana-script.service: {e}")
+        return {
+            'success': False,
+            'message': 'Error starting service',
+            'error': str(e)
+        }
+
+# -- Handle incoming WebSocket messages from clients --
+async def handle_client_message(websocket, message):
+    """Handle messages received from WebSocket clients"""
+    try:
+        data = json.loads(message)
+        action = data.get('action')
+        
+        logger.info(f"Received action: {action}")
+        
+        if action == 'run-prana-script':
+            # Extract any data that was sent
+            payload_data = data.get('data', {})
+            logger.info(f"Running prana script with data: {payload_data}")
+            
+            # Run the systemd service
+            result = await run_prana_service(payload_data)
+            
+            # Send result back to the client
+            response = {
+                'type': 'prana-script-result',
+                'timestamp': asyncio.get_event_loop().time(),
+                **result
+            }
+            
+            await websocket.send(json.dumps(response))
+            logger.info(f"Sent response to client: {result['success']}")
+            
+        elif action == 'run-script':
+            # Handle your existing run-script action
+            logger.info("Handling existing run-script action")
+            # Add your existing script logic here if needed
+            
+        else:
+            logger.warning(f"Unknown action received: {action}")
+            await websocket.send(json.dumps({
+                'type': 'error',
+                'message': f'Unknown action: {action}'
+            }))
+            
+    except json.JSONDecodeError:
+        logger.error("Invalid JSON received from client")
+        await websocket.send(json.dumps({
+            'type': 'error',
+            'message': 'Invalid JSON format'
+        }))
+    except Exception as e:
+        logger.error(f"Error handling client message: {e}")
+        await websocket.send(json.dumps({
+            'type': 'error',
+            'message': f'Server error: {str(e)}'
+        }))
 
 # -- Send MQTT messages to all connected WebSocket clients --
 async def broadcast_handler():
@@ -123,8 +220,9 @@ async def ws_handler(websocket):
         await websocket.send(welcome_msg)
         logger.info("Welcome message sent to client")
         
-        # Keep the connection alive
-        await websocket.wait_closed()
+        # Listen for incoming messages from the client
+        async for message in websocket:
+            await handle_client_message(websocket, message)
         
     except websockets.exceptions.ConnectionClosed:
         logger.info("WebSocket client disconnected normally")

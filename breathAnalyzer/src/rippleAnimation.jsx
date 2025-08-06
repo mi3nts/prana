@@ -40,7 +40,7 @@ export default function RippleParticles() {
   const dHumidityRef = useRef(0);
   const dCo2Ref = useRef(0);
   
-  const numParticles = 35;
+  const numParticles = 20;
   const co2Threshold = 8;
   const timeElapsed = 6;
 
@@ -56,6 +56,7 @@ export default function RippleParticles() {
   const maxdFco2Ref = useRef(0);
   
   const isActiveRef = useRef(false);
+  const wsRef = useRef(null);  // Store WebSocket here for use outside other hooks
 
   useEffect(() => {
     isActiveRef.current = isActive;
@@ -112,6 +113,11 @@ export default function RippleParticles() {
 
   useEffect(() => {
     if (showLoading) {
+      // Send run-script command to existing WebSocket when loading starts
+      if(wsRef.current && wsRef.current.readyState === WebSocket.OPEN){
+        wsRef.current.send(JSON.stringify({ action: 'run-script' }));
+      }
+
       const timer = setTimeout(() => {
         // Lock the data when PranaReading becomes visible
         setLockedMaxdFco2(maxdFco2Ref.current);
@@ -139,6 +145,7 @@ export default function RippleParticles() {
     window.addEventListener("resize", handleResize);
 
     const ws = new WebSocket("ws://localhost:8765");
+    wsRef.current = ws; // Save websocket ref for use elsewhere
 
     ws.onopen = () => {
       console.log("WebSocket connected");
@@ -164,9 +171,9 @@ export default function RippleParticles() {
           const timeSinceActivation = Date.now() - activationTimeRef.current;
 
           if(timeSinceActivation > stabilizationPeriod){
-          previousCo2Ref.current = co2Ref.current;
-          prevFilteredCo2Ref.current = co2AvgRef.current;
-          previousHumidityRef.current = humidRef.current;
+            previousCo2Ref.current = co2Ref.current;
+            prevFilteredCo2Ref.current = co2AvgRef.current;
+            previousHumidityRef.current = humidRef.current;
           }
           
           setTimeout(sleep, 100);
@@ -202,9 +209,9 @@ export default function RippleParticles() {
           const timeSinceActivation = Date.now()- activationTimeRef.current;
 
           if(timeSinceActivation > stabilizationPeriod){
-          dCo2Ref.current = co2Ref.current - previousCo2Ref.current;
-          dFilteredCo2Ref.current = co2AvgRef.current - prevFilteredCo2Ref.current;
-          dHumidityRef.current = humidRef.current - previousHumidityRef.current;
+            dCo2Ref.current = co2Ref.current - previousCo2Ref.current;
+            dFilteredCo2Ref.current = co2AvgRef.current - prevFilteredCo2Ref.current;
+            dHumidityRef.current = humidRef.current - previousHumidityRef.current;
           }
 
           if (dFilteredCo2Ref.current > maxdFco2Ref.current && dFilteredCo2Ref.current < 50) {
@@ -313,8 +320,8 @@ export default function RippleParticles() {
       ctx.fillStyle = "white";
       ctx.font = "16px monospace";
       ctx.textAlign = "left";
-      ctx.fillText(`Current CO2: ${co2Ref.current.toFixed(1)} ppm`, 10, 100);
-      ctx.fillText(`Current Avg Co2: ${co2AvgRef.current.toFixed(1)} ppm`, 10, 120);
+      ctx.fillText(`Latest CO2: ${co2Ref.current} ppm`, 10, 20);
+      ctx.fillText(`Average CO2: ${co2AvgRef.current} ppm`, 10, 40);
 
       const now = Date.now();
 
@@ -366,6 +373,25 @@ export default function RippleParticles() {
     };
   }, []); 
 
+  useEffect(() => {
+    if (showPranaReading) {
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        const message = {
+          action: 'run-prana-script',
+          data: {
+            maxdFco2: lockedMaxdFco2,
+            co2Threshold: lockedCo2Threshold
+          }
+        };
+        
+        wsRef.current.send(JSON.stringify(message));
+        console.log('Prana script service execution requested');
+      } else {
+        console.error('WebSocket not connected, cannot execute prana script');
+      }
+    }
+  }, [showPranaReading, lockedMaxdFco2, lockedCo2Threshold]);
+
   return (
     <>
       <div style={{ zIndex: 0, overflow: "hidden" }}>
@@ -409,8 +435,7 @@ export default function RippleParticles() {
             left: 0,
             width: "100vw",
             height: "100vh",
-            backdropFilter: "blur(8px)",
-            WebkitBackdropFilter: "blur(8px)",
+            transition: "opacity 0.3s ease",
             backgroundColor: "rgba(0, 0, 0, 0.4)",
             zIndex: 1000,
             pointerEvents: "none",
@@ -426,7 +451,7 @@ export default function RippleParticles() {
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            zIndex: 2000,
+            zIndex: showPranaReading ? 0 : 2000,
             animation: showPranaReading ? 'fadeOut 0.5s ease-in-out' : 'fadeIn 1s ease-in-out',
           }}
         >
@@ -466,12 +491,12 @@ export default function RippleParticles() {
     from {
       opacity: 0;
       backdropFilter: blur(0px);
-      -webkit-backdrop-filter: blur(0px);
+      transform: scale(1.01);
     }
     to {
       opacity: 1;
-      backdropFilter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      backdropFilter: blur(4px);
+      transform: scale(1);
     }
   }
 
