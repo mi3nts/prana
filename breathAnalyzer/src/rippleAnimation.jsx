@@ -53,7 +53,7 @@ export default function RippleParticles() {
   const [maxdFco2, setMaxdFco2] = useState(0);
   const [lockedMaxdFco2, setLockedMaxdFco2] = useState(0);
   const [lockedCo2Threshold, setLockedCo2Threshold] = useState(co2Threshold);
-  const [initialCo2, setInitialCo2] = useState(null);
+  const [ambientCo2, setAmbientCo2] = useState(null);
   const maxdFco2Ref = useRef(0);
   
   
@@ -95,7 +95,7 @@ export default function RippleParticles() {
           dFilteredCo2Ref.current = 0;
           dCo2Ref.current = 0;
           dHumidityRef.current = 0;
-          setInitialCo2(co2Ref.current);
+          setAmbientCo2(co2Ref.current);
         } else if (mode === 'overlay'){
           //reset everything
           setMode('idle');
@@ -105,6 +105,7 @@ export default function RippleParticles() {
           setShowLoading(false);
           setShowBlur(false);
           setMaxdFco2(0);
+          setAmbientCo2(null);
           maxdFco2Ref.current = 0;
           activationTimeRef.current = 0;
         };
@@ -164,7 +165,6 @@ export default function RippleParticles() {
 
       if (topic === "d83add7316a5/COZIR001Test") {
         if (isActiveRef.current) {
-          
           if (activationTimeRef.current === 0){
             activationTimeRef.current = Date.now();
             previousCo2Ref.current = payload.co2Latest ?? 0;
@@ -325,19 +325,14 @@ export default function RippleParticles() {
       ctx.textAlign = "left";
       let textY = 20
 
-      if (initialCo2 !== null) {
-        ctx.fillText(`Initial CO2: ${initialCo2} ppm`, 10, textY);
-        textY += 20;
+      if (ambientCo2 !== null) {
+        ctx.fillText(`Initial CO2: ${ambientCo2} ppm`, 10, 20);
+        ctx.fillText(`Current CO2: ${co2AvgRef.current} ppm`, 10, 40)
       }
       else {
         ctx.fillText(`Ambient CO2: ${co2AvgRef.current} ppm`, 10, textY);
         textY += 20;
       }
-
-      ctx.fillText(`Latest CO2: ${co2Ref.current} ppm`, 10, textY);
-      textY += 20;
-
-      ctx.fillText(`Average CO2: ${co2AvgRef.current} ppm`, 10, textY);
 
       const now = Date.now();
 
@@ -500,7 +495,7 @@ export default function RippleParticles() {
             fontWeight: "bold",
           }}
         >
-          Please breathe into the enclosure
+          Awaiting breath...
         </div>
       )}
 
