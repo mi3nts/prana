@@ -12,9 +12,6 @@ else
 fi
 
 sleep 1
-#!/bin/bash
-
-echo "Stopping processes..."
 
 # Kill mqttWebsocket.py (port 8765)
 ws_pid=$(lsof -ti :8765)

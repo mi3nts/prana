@@ -8,12 +8,10 @@ import subprocess
 from mintsXU4 import mintsDefinitions as mD
 import collections
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-# -- MQTT Configuration --
 MQTT_BROKER = mD.mqttBrokerDC
 MQTT_PORT = mD.mqttPort
 credentials = mD.credentials
@@ -21,16 +19,14 @@ UN = credentials['mqtt']['username']
 PW = credentials['mqtt']['password']
 decoder = json.JSONDecoder(object_pairs_hook=collections.OrderedDict)
 
-# -- WebSocket Configuration --
 WEBSOCKET_HOST = "localhost"
 WEBSOCKET_PORT = 8765
 
-# -- Global variables (accessible from all functions) --
 connected_clients = set()
 message_queue = asyncio.Queue()
 main_loop = None
 
-# -- Function to run systemd service --
+# Function to run systemd service
 async def run_prana_service(data=None):
     """Run the prana-script.service using systemctl"""
     try:
@@ -74,7 +70,7 @@ async def run_prana_service(data=None):
             'error': str(e)
         }
 
-# -- Handle incoming WebSocket messages from clients --
+# Handle incoming WebSocket messages from clients 
 async def handle_client_message(websocket, message):
     """Handle messages received from WebSocket clients"""
     try:
@@ -126,7 +122,7 @@ async def handle_client_message(websocket, message):
             'message': f'Server error: {str(e)}'
         }))
 
-# -- Send MQTT messages to all connected WebSocket clients --
+# Send MQTT messages to all connected WebSocket clients
 async def broadcast_handler():
     """Continuously process messages from the queue and broadcast them"""
     global connected_clients  
@@ -142,7 +138,6 @@ async def broadcast_handler():
             data = json.dumps({"topic": topic, "message": message})
             logger.info(f"Broadcasting to {len(connected_clients)} clients: {topic}")
             
-            # Send to all connected clients
             disconnected_clients = set()
             for ws in connected_clients.copy():
                 try:
@@ -166,7 +161,7 @@ def on_connect(client, userdata, flags, rc):
     topics = [
         "d83add7316a5/BME280Test",
         "d83add7316a5/COZIR001Test",
-        "d83add7316a5/IPS7100Test"          # IPS and BME use same bus -> same node
+        "d83add7316a5/IPS7100Test"          
     ]
     for topic in topics:
         client.subscribe(topic)
@@ -178,7 +173,6 @@ def on_message(client, userdata, msg):
     message = msg.payload.decode("utf-8")
     logger.info(f"[MQTT] {msg.topic}: {message}")
     
-    # Put message in queue for async processing
     try:
         if main_loop and not main_loop.is_closed():
             main_loop.call_soon_threadsafe(message_queue.put_nowait, (msg.topic, message))
@@ -188,7 +182,6 @@ def on_message(client, userdata, msg):
     except Exception as e:
         logger.error(f"Error queuing message: {e}")
 
-# -- Start MQTT Client --
 def start_mqtt():
     client = MQTTClient()
     client.username_pw_set(UN, PW)
@@ -204,7 +197,6 @@ def start_mqtt():
     except Exception as e:
         logger.error(f"Failed to start MQTT client: {e}")
 
-# -- WebSocket server handler --
 async def ws_handler(websocket):
     global connected_clients  
     
@@ -242,7 +234,6 @@ async def main():
     
     broadcast_task = asyncio.create_task(broadcast_handler())
     
-    # Start the WebSocket server
     async with websockets.serve(ws_handler, WEBSOCKET_HOST, WEBSOCKET_PORT):
         logger.info(f"WebSocket server started on {WEBSOCKET_HOST}:{WEBSOCKET_PORT}")
         

@@ -53,7 +53,9 @@ export default function RippleParticles() {
   const [maxdFco2, setMaxdFco2] = useState(0);
   const [lockedMaxdFco2, setLockedMaxdFco2] = useState(0);
   const [lockedCo2Threshold, setLockedCo2Threshold] = useState(co2Threshold);
+  const [initialCo2, setInitialCo2] = useState(null);
   const maxdFco2Ref = useRef(0);
+  
   
   const isActiveRef = useRef(false);
   const wsRef = useRef(null);  // Store WebSocket here for use outside other hooks
@@ -93,6 +95,7 @@ export default function RippleParticles() {
           dFilteredCo2Ref.current = 0;
           dCo2Ref.current = 0;
           dHumidityRef.current = 0;
+          setInitialCo2(co2Ref.current);
         } else if (mode === 'overlay'){
           //reset everything
           setMode('idle');
@@ -320,8 +323,21 @@ export default function RippleParticles() {
       ctx.fillStyle = "white";
       ctx.font = "16px monospace";
       ctx.textAlign = "left";
-      ctx.fillText(`Latest CO2: ${co2Ref.current} ppm`, 10, 20);
-      ctx.fillText(`Average CO2: ${co2AvgRef.current} ppm`, 10, 40);
+      let textY = 20
+
+      if (initialCo2 !== null) {
+        ctx.fillText(`Initial CO2: ${initialCo2} ppm`, 10, textY);
+        textY += 20;
+      }
+      else {
+        ctx.fillText(`Ambient CO2: ${co2AvgRef.current} ppm`, 10, textY);
+        textY += 20;
+      }
+
+      ctx.fillText(`Latest CO2: ${co2Ref.current} ppm`, 10, textY);
+      textY += 20;
+
+      ctx.fillText(`Average CO2: ${co2AvgRef.current} ppm`, 10, textY);
 
       const now = Date.now();
 
@@ -329,7 +345,7 @@ export default function RippleParticles() {
         activeStartTime = now;
       }
 
-      // Show blur 1 second before scroll appears
+      // show blur 1 second before scroll appears
       if (isActiveRef.current && activeStartTime) {
         const elapsed = (now - activeStartTime) / 1000;
         if (elapsed >= timeElapsed - 1 && !showBlur) {
@@ -466,6 +482,25 @@ export default function RippleParticles() {
           }}
         >
           <PranaReading maxdFCo2={lockedMaxdFco2} co2Threshold={lockedCo2Threshold} />
+        </div>
+      )}
+      {mode === 'idle' && (
+        <div
+          style={{
+            position: "fixed",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            fontSize: "2rem",
+            color: "white",
+            zIndex: 9998,
+            pointerEvents: "none",
+            userSelect: "none",
+            textAlign: "center",
+            fontWeight: "bold",
+          }}
+        >
+          Please breathe into the enclosure
         </div>
       )}
 
